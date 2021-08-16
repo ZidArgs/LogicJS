@@ -1,0 +1,17 @@
+{
+  "name": "treelogicjs",
+  "version": "0.1.0",
+  "description": "Tree Logic Processor for JS Applications",
+  "type": "module",
+  "scripts": {
+    "test": "serve . -p 12000"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@bitbucket.org/zidargs/treelogicjs.git"
+  },
+  "author": "Denis Peters (ZidArgs)",
+  "license": "MIT",
+  "homepage": "https://bitbucket.org/zidargs/treelogicjs/src",
+  "dependencies": {}
+}
