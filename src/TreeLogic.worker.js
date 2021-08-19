@@ -1,74 +1,103 @@
+self.importScripts("./worker/scripts/util/PortHandler.js");
+self.importScripts("./worker/scripts/logic/Processor.js");
 
-{
-    class Processor {
+const PROCESSOR = new self.Processor();
 
-        // TODO
-
-    }
-
-    self.LOGIC_PROCESSOR = new Processor();
-}
-
-/* PortHandler */
-{
-    const PORTS = new Set;
-
-    class PortHandler extends EventTarget {
-
-        constructor() {
-            super();
-            self.addEventListener("connect", event => {
-                const port = event.ports[0];
-                PORTS.add(port);
-                port.addEventListener("message", event => {
-                    const ev = new Event("message");
-                    ev.port = port;
-                    ev.data = event.data;
-                    this.dispatchEvent(ev);
-                });
-                port.start();
-            });
-            self.addEventListener("disconnect", event => {
-                PORTS.remove(event.ports[0]);
-            });
-        }
-    
-        sendOne(port, msg) {
-            port.postMessage(msg);
-        }
-    
-        sendAll(msg) {
-            for (const p of PORTS) {
-                p.postMessage(msg);
-            }
-        }
-        
-        sendAllButOne(port, msg) {
-            for (const p of PORTS) {
-                if (p == port) continue;
-                p.postMessage(msg);
-            }
-        }
-    
-    }
-
-    self.portHandler = new PortHandler();
-}
-
-self.portHandler.addEventListener("message", (event) => {
+self.PortHandler.addEventListener("message", (event) => {
     const port = event.port;
     const {type = "", data = {}} = event.data;
     switch (type) {
+        case "set debug": {
+            const {value} = data;
+            PROCESSOR.debug = value;
+        } break;
+        case "get debug": {
+            const res = PROCESSOR.debug;
+            self.PortHandler.sendOne(port, {type, data: res});
+        } break;
         case "clearGraph": {
-            self.LOGIC_PROCESSOR.clearGraph();
+            PROCESSOR.clearGraph();
         } break;
         case "load": {
-            self.LOGIC_PROCESSOR.load(data);
+            const {config} = data;
+            PROCESSOR.load(config);
         } break;
-        // TODO
+        case "setEdge": {
+            const {target, value} = data;
+            PROCESSOR.setEdge(target, value);
+        } break;
+        case "setMixin": {
+            const {name, value} = data;
+            PROCESSOR.setMixin(name, value);
+        } break;
+        case "clearRedirects": {
+            PROCESSOR.clearRedirects();
+        } break;
+        case "setRedirect": {
+            const {source, target, reroute} = data;
+            PROCESSOR.setRedirect(source, target, reroute);
+        } break;
+        case "setAllRedirects": {
+            const {redirects} = data;
+            PROCESSOR.setAllRedirects(redirects);
+        } break;
+        case "getRedirect": {
+            const {source, target} = data;
+            const res = PROCESSOR.getRedirect(source, target);
+            self.PortHandler.sendOne(port, {type, data: res});
+        } break;
+        case "getEdges": {
+            const res = PROCESSOR.getEdges();
+            self.PortHandler.sendOne(port, {type, data: res});
+        } break;
+        case "getTargetNodes": {
+            const res = PROCESSOR.getTargetNodes();
+            self.PortHandler.sendOne(port, {type, data: res});
+        } break;
+        case "addReachable": {
+            const {target} = data;
+            PROCESSOR.addReachable(target);
+        } break;
+        case "deleteReachable": {
+            const {target} = data;
+            PROCESSOR.deleteReachable(target);
+        } break;
+        case "clearReachables": {
+            PROCESSOR.clearReachables();
+        } break;
+        case "traverse": {
+            const {startNode} = data;
+            const res = PROCESSOR.traverse(startNode);
+            self.PortHandler.sendAll({type, data: res});
+        } break;
+        case "set": {
+            const {key, value} = data;
+            PROCESSOR.set(key, value);
+        } break;
+        case "setAll": {
+            const {values} = data;
+            PROCESSOR.setAll(values);
+        } break;
+        case "get": {
+            const {ref} = data;
+            const res = PROCESSOR.get(ref);
+            self.PortHandler.sendOne(port, {type, data: res});
+        } break;
         case "getAll": {
-            const res = self.LOGIC_PROCESSOR.getAll();
-            self.portHandler.sendOne(port, {type, data: res});
+            const res = PROCESSOR.getAll();
+            self.PortHandler.sendOne(port, {type, data: res});
+        } break;
+        case "has": {
+            const {ref} = data;
+            const res = PROCESSOR.has(ref);
+            self.PortHandler.sendOne(port, {type, data: res});
+        } break;
+        case "reset": {
+            PROCESSOR.reset();
+        } break;
+        case "isDirty": {
+            const res = PROCESSOR.isDirty();
+            self.PortHandler.sendOne(port, {type, data: res});
         } break;
     }
 });

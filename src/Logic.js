@@ -15,16 +15,18 @@ async function getRegistry() {
 async function registerWorker() {
     const registry = await getRegistry();
     if (registry != null) {
+        // TODO add wrapper
         const workerPath = path.getAbsolute("./TreeLogic.worker.js");
         return registry.register("TreeLogic", workerPath)
     } else {
+        // TODO proxy caller
         return await Import.module("./TreeLogicFakeWorker.js");
     }
 }
 
 const WORKER = registerWorker();
 
-class TreeLogic extends EventTarget {
+class Logic extends EventTarget {
 
     constructor() {
         super();
@@ -44,4 +46,4 @@ class TreeLogic extends EventTarget {
 
 }
 
-export default new TreeLogic();
+export default new Logic();
