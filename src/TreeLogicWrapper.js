@@ -1,101 +1,142 @@
 const WORKER = new WeakMap();
+const MSG_RES = new WeakMap();
+const MSG_CNT = new WeakMap();
 
-export default class TreeLogic {
+export default class TreeLogic extends EventTarget {
 
     constructor(worker) {
+        super();
+        const msgRes = new Map();
         WORKER.set(this, worker);
+        MSG_RES.set(this, msgRes);
+        MSG_CNT.set(this, 0);
+        worker.addEventListener("message", (event) => {
+            const {id, type = "", data = {}} = event.data;
+            if (type == "traverse") {
+                const ev = new Event("logic");
+                ev.data = data;
+                this.dispatchEvent(ev);
+            } else if(msgRes.has(id)) {
+                const resolve = msgRes.get(id);
+                resolve(data);
+            } else {
+                console.warn("unknown event", event.data);
+            }
+        });
     }
 
-    set debug(value) {
-
+    /*#*/__get(type, data) {
+        return new Promise((resolve) => {
+            const msg = {action: "get", type, data};
+            const msgCnt = MSG_CNT.get(this);
+            MSG_CNT.set(this, msgCnt + 1);
+            const msgRes = MSG_RES.get(this);
+            msgRes.set(msgCnt, resolve);
+            msg.id = msgCnt;
+            const worker = WORKER.get(this); 
+            worker.postMessage(msg)
+        });
     }
 
-    get debug() {
-        return 1;
+    /*#*/__post(type, data) {
+        return new Promise((resolve) => {
+            const msg = {action: "post", type, data};
+            const worker = WORKER.get(this); 
+            worker.postMessage(msg);
+            resolve();
+        });
     }
 
-    clearGraph() {
-
+    async setDebug(value) {
+        await this.__post("debug", {value});
     }
 
-    load(config) {
-
+    async getDebug() {
+        return await this.__get("debug");
     }
-    
-    setEdge(source, target, value) {
 
+    async clearGraph() {
+        await this.__post("clearGraph");
     }
-    
-    setMixin(name, value) {
 
-    }
-    
-    clearRedirects() {
-
-    }
-    
-    setRedirect(source, target, reroute) {
-
-    }
-    
-    setAllRedirects(redirects) {
-
-    }
-    
-    getRedirect(source, target) {
-
-    }
-    
-    getEdges() {
-
-    }
-    
-    getTargetNodes() {
-
-    }
-    
-    addReachable(target) {
-
-    }
-    
-    deleteReachable(target) {
-
+    async load(config) {
+        await this.__post("load", {config});
     }
     
-    clearReachables() {
-
+    async setEdge(source, target, value) {
+        await this.__post("setEdge", {source, target, value});
     }
     
-    traverse(startNode) {
-
+    async setMixin(name, value) {
+        await this.__post("setMixin", {name, value});
     }
     
-    set(key, value) {
-
+    async clearRedirects() {
+        await this.__post("clearRedirects");
     }
     
-    setAll(values) {
-
+    async setRedirect(source, target, reroute) {
+        await this.__post("setRedirect", {source, target, reroute});
     }
     
-    get(ref) {
-
+    async setAllRedirects(redirects) {
+        await this.__post("setAllRedirects", {redirects});
     }
     
-    getAll() {
-
+    async getRedirect(source, target) {
+        return await this.__get("getRedirect", {source, target});
     }
     
-    has(ref) {
-
+    async getEdges() {
+        return await this.__get("getEdges");
     }
     
-    reset() {
-
+    async getTargetNodes() {
+        return await this.__get("getTargetNodes");
     }
     
-    isDirty() {
-
+    async addReachable(target) {
+        await this.__post("addReachable", {target});
+    }
+    
+    async deleteReachable(target) {
+        await this.__post("deleteReachable", {target});
+    }
+    
+    async clearReachables() {
+        await this.__post("clearReachables");
+    }
+    
+    async traverse(startNode) {
+        await this.__post("traverse", {startNode});
+    }
+    
+    async set(key, value) {
+        await this.__post("set", {key, value});
+    }
+    
+    async setAll(values) {
+        await this.__post("setAll", {values});
+    }
+    
+    async get(ref) {
+        return await this.__get("get", {ref});
+    }
+    
+    async getAll() {
+        return await this.__get("getAll");
+    }
+    
+    async has(ref) {
+        return await this.__get("has", {ref});
+    }
+    
+    async reset() {
+        await this.__post("reset");
+    }
+    
+    async isDirty() {
+        return await this.__get("isDirty");
     }
     
 }

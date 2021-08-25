@@ -18,16 +18,25 @@ class PortHandler extends EventTarget {
         self.addEventListener("disconnect", event => {
             PORTS.remove(event.ports[0]);
         });
+        self.addEventListener("message", event => {
+            const ev = new Event("message");
+            ev.data = event.data;
+            this.dispatchEvent(ev);
+        });
     }
 
     sendOne(port, msg) {
-        port.postMessage(msg);
+        if (port instanceof MessagePort) {
+            port.postMessage(msg);
+        }
+        self.postMessage(msg);
     }
 
     sendAll(msg) {
         for (const p of PORTS) {
             p.postMessage(msg);
         }
+        self.postMessage(msg);
     }
     
     sendAllButOne(port, msg) {

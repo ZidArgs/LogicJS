@@ -1,19 +1,22 @@
-self.importScripts("./worker/scripts/util/PortHandler.js");
-self.importScripts("./worker/scripts/logic/Processor.js");
+self.path = self.location.pathname.replace(/\/[^/]+$/, "");
+
+self.importScripts(`${self.path}/worker/scripts/PortHandler.js`);
+self.importScripts(`${self.path}/worker/scripts/Processor.js`);
 
 const PROCESSOR = new self.Processor();
 
 self.PortHandler.addEventListener("message", (event) => {
     const port = event.port;
-    const {type = "", data = {}} = event.data;
+    const {id, action, type = "", data = {}} = event.data;
     switch (type) {
-        case "set debug": {
-            const {value} = data;
-            PROCESSOR.debug = value;
-        } break;
-        case "get debug": {
-            const res = PROCESSOR.debug;
-            self.PortHandler.sendOne(port, {type, data: res});
+        case "debug": {
+            if (action == "post") {
+                const {value} = data;
+                PROCESSOR.debug = value;
+            } else if (action == "get") {
+                const res = PROCESSOR.debug;
+                self.PortHandler.sendOne(port, {id, type, data: res});
+            }
         } break;
         case "clearGraph": {
             PROCESSOR.clearGraph();
@@ -23,8 +26,8 @@ self.PortHandler.addEventListener("message", (event) => {
             PROCESSOR.load(config);
         } break;
         case "setEdge": {
-            const {target, value} = data;
-            PROCESSOR.setEdge(target, value);
+            const {source, target, value} = data;
+            PROCESSOR.setEdge(source, target, value);
         } break;
         case "setMixin": {
             const {name, value} = data;
@@ -44,15 +47,15 @@ self.PortHandler.addEventListener("message", (event) => {
         case "getRedirect": {
             const {source, target} = data;
             const res = PROCESSOR.getRedirect(source, target);
-            self.PortHandler.sendOne(port, {type, data: res});
+            self.PortHandler.sendOne(port, {id, type, data: res});
         } break;
         case "getEdges": {
             const res = PROCESSOR.getEdges();
-            self.PortHandler.sendOne(port, {type, data: res});
+            self.PortHandler.sendOne(port, {id, type, data: res});
         } break;
         case "getTargetNodes": {
             const res = PROCESSOR.getTargetNodes();
-            self.PortHandler.sendOne(port, {type, data: res});
+            self.PortHandler.sendOne(port, {id, type, data: res});
         } break;
         case "addReachable": {
             const {target} = data;
@@ -81,23 +84,23 @@ self.PortHandler.addEventListener("message", (event) => {
         case "get": {
             const {ref} = data;
             const res = PROCESSOR.get(ref);
-            self.PortHandler.sendOne(port, {type, data: res});
+            self.PortHandler.sendOne(port, {id, type, data: res});
         } break;
         case "getAll": {
             const res = PROCESSOR.getAll();
-            self.PortHandler.sendOne(port, {type, data: res});
+            self.PortHandler.sendOne(port, {id, type, data: res});
         } break;
         case "has": {
             const {ref} = data;
             const res = PROCESSOR.has(ref);
-            self.PortHandler.sendOne(port, {type, data: res});
+            self.PortHandler.sendOne(port, {id, type, data: res});
         } break;
         case "reset": {
             PROCESSOR.reset();
         } break;
         case "isDirty": {
             const res = PROCESSOR.isDirty();
-            self.PortHandler.sendOne(port, {type, data: res});
+            self.PortHandler.sendOne(port, {id, type, data: res});
         } break;
     }
 });

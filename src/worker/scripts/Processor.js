@@ -1,5 +1,246 @@
-self.importScripts("./NodeFactory.js");
-self.importScripts("./Compiler.js");
+const Compiler = (() => {
+    const TRANSPILERS = {
+        /* literals */
+        "true":     (logic) => "1",
+        "false":    (logic) => "0",
+        "string":   (logic) => escape(logic.el),
+        "number":   (logic) => toNumber(logic.el),
+        "value":    (logic) => `(val("${escape(logic.el)}")||0)`,
+        "pointer":  (logic) => `(val(val("${escape(logic.el)}")||"")||0)`,
+        "state":    (logic) => `(val("${escape(logic.el)}")||"")=="${escape(logic.value)}"`,
+    
+        /* operators */
+        "and":      (logic) => `${multiElementOperation(logic.el, "&&")}`,
+        "nand":     (logic) => `!${multiElementOperation(logic.el, "&&")}`,
+        "or":       (logic) => `${multiElementOperation(logic.el, "||")}`,
+        "nor":      (logic) => `!${multiElementOperation(logic.el, "||")}`,
+        "not":      (logic) => `!(${buildLogic(logic.el)})`,
+        "xor":      (logic) => `${twoElementOperation(logic.el, "^") || 1}`,
+        "xnor":     (logic) => `!${twoElementOperation(logic.el, "^") || 1}`,
+    
+        /* restrictors */
+        "min":      (logic) => `(${buildLogic(logic.el)}>=${escape(logic.value, 0)})`,
+        "max":      (logic) => `(${buildLogic(logic.el)}<=${escape(logic.value, 0)})`,
+    
+        /* comparators */
+        "eq":       (logic) => twoElementOperation(logic.el, "=="),
+        "neq":      (logic) => twoElementOperation(logic.el, "!="),
+        "lt":       (logic) => twoElementOperation(logic.el, "<"),
+        "lte":      (logic) => twoElementOperation(logic.el, "<="),
+        "gt":       (logic) => twoElementOperation(logic.el, ">"),
+        "gte":      (logic) => twoElementOperation(logic.el, ">="),
+    
+        /* math */
+        "add":      (logic) => mathMultiElementOperation(logic.el, "+"),
+        "sub":      (logic) => mathMultiElementOperation(logic.el, "-"),
+        "mul":      (logic) => mathMultiElementOperation(logic.el, "*"),
+        "div":      (logic) => mathMultiElementOperation(logic.el, "/"),
+        "mod":      (logic) => mathMultiElementOperation(logic.el, "%"),
+        "pow":      (logic) => mathTwoElementOperation(logic.el, "**"),
+    
+        /* special */
+        "at":       (logic) => logic.el ? `((val("${escape(logic.node)}")||0)&&${buildLogic(logic.el)})` : `(val("${escape(logic.node)}")||0)`,
+        "mixin":    (logic) => `execute("${escape(logic.el)}")`
+    };
+    
+    const dependencies = new Set();
+    
+    /* STRINGS */
+    function escape(str, def = "") {
+        if (typeof str != "string") {
+            if (typeof str == "number" && !isNaN(str)) {
+                return str;
+            }
+            return def;
+        }
+        const res = str.replace(/[\\"]/g, "\\$&");
+        dependencies.add(res);
+        return res;
+    }
+    
+    /* ELEMENTS */
+    function twoElementOperation(els, join) {
+        if (els.length == 0) {
+            return 0;
+        }
+        if (els.length == 1) {
+            return buildLogic(els[0]);
+        }
+        return `(${buildLogic(els[0])}${join}${buildLogic(els[1])})`;
+    }
+    
+    function multiElementOperation(els, join) {
+        if (els.length == 0) {
+            return 0;
+        }
+        if (els.length == 1) {
+            return buildLogic(els[0]);
+        }
+        return `(${els.map(buildLogic).join(join)})`;
+    }
+    
+    /* MATH */
+    function toNumber(val) {
+        return `(parseInt(${val})||0)`
+    }
+    
+    function mathTwoElementOperation(els, join) {
+        if (els.length == 0) {
+            return 0;
+        }
+        if (els.length == 1) {
+            return buildLogic(els[0]);
+        }
+        return toNumber(`${buildLogic(toNumber(els[0]))}${join}${buildLogic(toNumber(els[1]))}`);
+    }
+    
+    function mathMultiElementOperation(els, join) {
+        if (els.length == 0) {
+            return 0;
+        }
+        if (els.length == 1) {
+            return buildLogic(els[0]);
+        }
+        return toNumber(`${els.map(buildLogic).map(toNumber).join(join)}`);
+    }
+    
+    /* INITIATOR */
+    function buildLogic(logic) {
+        if (typeof logic != "object") {
+            logic = {type: logic};
+        }
+        if (TRANSPILERS[logic.type] != null) {
+            return TRANSPILERS[logic.type](logic);
+        }
+        return 0;
+    }
+    
+    class Compiler {
+    
+        compile(logic) {
+            const buf = buildLogic(logic);
+            const fn = new Function("val", "execute", `return ${buf}`);
+            Object.defineProperty(fn, "requires", {value: dependencies});
+            dependencies.clear();
+            return fn;
+        }
+    
+    }
+
+    return new Compiler();
+})();
+
+const NodeFactory = (() => {
+    const EDGES = new WeakMap();
+    const NAME = new WeakMap();
+
+    class Node {
+
+        constructor(name) {
+            EDGES.set(this, new Map());
+            NAME.set(this, name);
+        }
+
+        getName() {
+            return NAME.get(this);
+        }
+
+        append(node, condition) {
+            if (node instanceof Node) {
+                const edges = EDGES.get(this);
+                edges.set(node.getName(), new Edge(this, node, condition));
+            } else {
+                throw new TypeError("Expected type Node");
+            }
+        }
+
+        remove(node) {
+            if (node instanceof Node) {
+                const edges = EDGES.get(this);
+                edges.delete(node.getName());
+            } else {
+                throw new TypeError("Expected type Node");
+            }
+        }
+
+        getTargets() {
+            const edges = EDGES.get(this);
+            return edges.keys();
+        }
+
+        getEdge(name) {
+            const edges = EDGES.get(this);
+            return edges.get(name);
+        }
+
+        toString() {
+            return this.getName();
+        }
+        
+    }
+
+    const SOURCE = new WeakMap();
+    const TARGET = new WeakMap();
+    const CONDITION = new WeakMap();
+
+    class Edge {
+
+        constructor(source, target, condition) {
+            SOURCE.set(this, source);
+            TARGET.set(this, target);
+            CONDITION.set(this, condition);
+        }
+
+        getCondition() {
+            return CONDITION.get(this);
+        }
+
+        getTarget() {
+            return TARGET.get(this);
+        }
+
+        getSource() {
+            return SOURCE.get(this);
+        }
+
+        toString() {
+            return `${SOURCE.get(this)} => ${TARGET.get(this)}`;
+        }
+
+    }
+
+    /* node factory */
+    const NODES = new WeakMap();
+
+    return class NodeFactory {
+
+        constructor() {
+            NODES.set(this, new Map());
+        }
+
+        reset() {
+            const nodes = NODES.get(this);
+            nodes.clear();
+        }
+
+        get(name) {
+            const nodes = NODES.get(this);
+            if (nodes.has(name)) {
+                return nodes.get(name);
+            }
+            const node = new Node(name);
+            nodes.set(name, node);
+            return node;
+        }
+
+        getNames() {
+            const nodes = NODES.get(this);
+            return nodes.keys();
+        }
+
+    }
+
+})();
 
 function mapToObj(src) {
     const res = {};
@@ -30,7 +271,7 @@ const FORCED_REACHABLE = new WeakMap();
 self.Processor = class Processor {
 
     constructor(debug = false) {
-        NODES.set(this, new self.NodeFactory());
+        NODES.set(this, new NodeFactory());
         MIXINS.set(this, new Map());
         MEM_I.set(this, new Map());
         MEM_O.set(this, new Map());
@@ -67,7 +308,7 @@ self.Processor = class Processor {
             const node = nodeFactory.get(name);
             for (const child in children) {
                 const logic = children[child];
-                const fn = self.Compiler.compile(logic);
+                const fn = Compiler.compile(logic);
                 node.append(nodeFactory.get(child), fn);
                 if (!mem_o.has(child)) {
                     mem_o.set(child, false);
@@ -76,7 +317,7 @@ self.Processor = class Processor {
         }
         for (const name in config.logic) {
             const logic = config.logic[name];
-            const fn = self.Compiler.compile(logic);
+            const fn = Compiler.compile(logic);
             mixins.set(name, fn);
         }
         if (debug) {
@@ -99,7 +340,7 @@ self.Processor = class Processor {
             node.remove(child);
             DIRTY.set(this, true);
         } else {
-            const fn = self.Compiler.compile(value);
+            const fn = Compiler.compile(value);
             node.append(child, fn);
             DIRTY.set(this, true);
         }
@@ -121,7 +362,7 @@ self.Processor = class Processor {
             mixins.delete(name);
             DIRTY.set(this, true);
         } else {
-            const fn = self.Compiler.compile(value);
+            const fn = Compiler.compile(value);
             mixins.set(name, fn);
             DIRTY.set(this, true);
         }
