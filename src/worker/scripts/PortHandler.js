@@ -38,11 +38,13 @@ class PortHandler extends EventTarget {
         }
         self.postMessage(msg);
     }
-    
+        
     sendAllButOne(port, msg) {
-        for (const p of PORTS) {
-            if (p == port) continue;
-            p.postMessage(msg);
+        if (port instanceof MessagePort) {
+            for (const p of PORTS) {
+                if (p == port) continue;
+                p.postMessage(msg);
+            }
         }
     }
 
