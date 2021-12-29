@@ -1,21 +1,36 @@
 const EDGES = new WeakMap();
 const NAME = new WeakMap();
+const FILTER_DATA = new WeakMap();
 
 class Node {
 
     constructor(name) {
         EDGES.set(this, new Map());
         NAME.set(this, name);
+        FILTER_DATA.set(this, {});
     }
 
     getName() {
         return NAME.get(this);
     }
 
-    append(node, condition) {
+    setFilter(name, key, value) {
+        const filterData = FILTER_DATA.get(this);
+        filterData[name] = {
+            ...filterData[name],
+            [key]: value
+        };
+    }
+
+    getFilter(name, key) {
+        const filterData = FILTER_DATA.get(this);
+        return filterData[name]?.[key];
+    }
+
+    append(node, condition, filter) {
         if (node instanceof Node) {
             const edges = EDGES.get(this);
-            edges.set(node.getName(), new Edge(this, node, condition));
+            edges.set(node.getName(), new Edge(this, node, condition, filter));
         } else {
             throw new TypeError("Expected type Node");
         }
@@ -49,17 +64,23 @@ class Node {
 const SOURCE = new WeakMap();
 const TARGET = new WeakMap();
 const CONDITION = new WeakMap();
+const FILTER = new WeakMap();
 
 class Edge {
 
-    constructor(source, target, condition) {
+    constructor(source, target, condition, filter) {
         SOURCE.set(this, source);
         TARGET.set(this, target);
         CONDITION.set(this, condition);
+        FILTER.set(this, filter);
     }
 
     getCondition() {
         return CONDITION.get(this);
+    }
+
+    getFilter() {
+        return FILTER.get(this);
     }
 
     getTarget() {

@@ -27,6 +27,21 @@ const NODES = new WeakMap();
 const REDIRECT_MATRIX = new WeakMap();
 const FORCED_REACHABLE = new WeakMap();
 
+function changeFilterData(node, filter) {
+    let changed = false;
+    for (const name in filter) {
+        for (const key in filter[name]) {
+            const value = filter[name][key];
+            const oldValue = node.getFilter(name, key);
+            if (oldValue == null || (!oldValue && value)) {
+                node.setFilter(name, key, value);
+                changed = true;
+            }
+        }
+    }
+    return changed;
+}
+
 export default class Processor {
 
     constructor(debug = false) {
@@ -66,9 +81,10 @@ export default class Processor {
             const children = config.edges[name];
             const node = nodeFactory.get(name);
             for (const child in children) {
-                const logic = children[child];
-                const fn = Compiler.compile(logic);
-                node.append(nodeFactory.get(child), fn);
+                const condition = children[child].condition;
+                const filter = children[child].filter;
+                const fn = Compiler.compile(condition);
+                node.append(nodeFactory.get(child), fn, filter);
                 if (!mem_o.has(child)) {
                     mem_o.set(child, false);
                 }
@@ -259,7 +275,7 @@ export default class Processor {
                 reachableNodes.add(name);
             }
 
-            const valueGetter = key => {
+            const getValue = key => {
                 if (allTargets.has(key) && reachableNodes.has(key)) {
                     return 1;
                 } else if (mem_i.has(key)) {
@@ -268,10 +284,16 @@ export default class Processor {
                 return 0;
             };
 
+            const getFilter = node => {
+                return (name, key) => {
+                    return node.getFilter(name, key) ?? true;
+                };
+            };
+
             const execute = name => {
                 if (mixins.has(name)) {
                     const fn = mixins.get(name);
-                    const res = fn(valueGetter, execute);
+                    const res = fn(getValue, execute);
                     if (debug == "extended") {
                         console.groupCollapsed(`execute mixin { ${name} }`);
                         console.log(fn.toString());
@@ -295,15 +317,16 @@ export default class Processor {
                 let counts = queue.length;
                 while (counts--) {
                     const edge = queue.shift();
+                    const srcNode = edge.getSource();
                     const condition = edge.getCondition();
                     if (debug == "extended") {
                         console.groupCollapsed(`traverse edge { ${edge} }`);
                         console.log(condition.toString());
                     }
-                    const cRes = condition(valueGetter, execute);
+                    const cRes = condition(getValue, getFilter(srcNode), execute);
                     if (cRes) {
                         changed = true;
-                        const name = this.getRedirect(edge.getSource().getName(), edge.getTarget().getName());
+                        const name = this.getRedirect(srcNode.getName(), edge.getTarget().getName());
                         if (debug == "extended") {
                             if (name != edge.getTarget().getName()) {
                                 console.log(`redirecting edge { ${edge} } to point to { ${name} }`);
@@ -316,7 +339,9 @@ export default class Processor {
                             for (const ch of targets) {
                                 const chEdge = node.getEdge(ch);
                                 const chName = this.getRedirect(chEdge.getSource().getName(), chEdge.getTarget().getName());
-                                if (!reachableNodes.has(chName)) {
+                                const chNode = nodeFactory.get(chName);
+                                const filterChanged = changeFilterData(chNode, chEdge.getFilter());
+                                if (!reachableNodes.has(chName) || filterChanged) {
                                     queue.push(chEdge);
                                 }
                             }

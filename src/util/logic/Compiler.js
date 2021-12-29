@@ -2,7 +2,7 @@ const TRANSPILERS = {
     /* literals */
     "true":     (logic) => "1",
     "false":    (logic) => "0",
-    "string":   (logic) => escape(logic.el),
+    "string":   (logic) => `"${escape(logic.el)}"`,
     "number":   (logic) => toNumber(logic.el),
     "value":    (logic) => `(val("${escape(logic.el)}")||0)`,
     "pointer":  (logic) => `(val(val("${escape(logic.el)}")||"")||0)`,
@@ -39,7 +39,9 @@ const TRANSPILERS = {
 
     /* special */
     "at":       (logic) => logic.el ? `((val("${escape(logic.node)}")||0)&&${buildLogic(logic.el)})` : `(val("${escape(logic.node)}")||0)`,
-    "mixin":    (logic) => `execute("${escape(logic.el)}")`
+    "mixin":    (logic) => `exec("${escape(logic.el)}")`,
+    "function": (logic) => `exec("${escape(logic.el)}"${functionParams(logic.params)})`,
+    "filter":     (logic) => `filter("${escape(logic.el)}","${escape(logic.value)}")`
 };
 
 const dependencies = new Set();
@@ -59,21 +61,12 @@ function escape(str, def = "") {
 
 /* ELEMENTS */
 function twoElementOperation(els, join) {
-    if (els.length == 0) {
-        return 0;
-    }
-    if (els.length == 1) {
-        return buildLogic(els[0]);
-    }
-    return `(${buildLogic(els[0])}${join}${buildLogic(els[1])})`;
+    return mathMultiElementOperation(els.slice(0, 2), join);
 }
 
 function multiElementOperation(els, join) {
     if (els.length == 0) {
         return 0;
-    }
-    if (els.length == 1) {
-        return buildLogic(els[0]);
     }
     return `(${els.map(buildLogic).join(join)})`;
 }
@@ -84,23 +77,22 @@ function toNumber(val) {
 }
 
 function mathTwoElementOperation(els, join) {
-    if (els.length == 0) {
-        return 0;
-    }
-    if (els.length == 1) {
-        return buildLogic(els[0]);
-    }
-    return toNumber(`${buildLogic(toNumber(els[0]))}${join}${buildLogic(toNumber(els[1]))}`);
+    return mathMultiElementOperation(els.slice(0, 2), join);
 }
 
 function mathMultiElementOperation(els, join) {
     if (els.length == 0) {
         return 0;
     }
-    if (els.length == 1) {
-        return buildLogic(els[0]);
+    return `${els.map(buildLogic).map(toNumber).join(join)}`;
+}
+
+/* FUNCTION PARAMS */
+function functionParams(els) {
+    if (els.length == 0) {
+        return "";
     }
-    return toNumber(`${els.map(buildLogic).map(toNumber).join(join)}`);
+    return `,${els.map(buildLogic).join(",")}`;
 }
 
 /* INITIATOR */
@@ -118,7 +110,7 @@ class Compiler {
 
     compile(logic) {
         const buf = buildLogic(logic);
-        const fn = new Function("val", "execute", `return ${buf}`);
+        const fn = new Function("val", "data", "exec", `return ${buf}`);
         Object.defineProperty(fn, "requires", {value: dependencies});
         dependencies.clear();
         return fn;
