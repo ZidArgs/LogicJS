@@ -1,11 +1,9 @@
-self.path = self.location.pathname.replace(/\/[^/]+$/, "");
+import PortHandler from "./PortHandler.js";
+import Processor from "../processor/Processor.js";
 
-self.importScripts(`${self.path}/worker/scripts/PortHandler.js`);
-self.importScripts(`${self.path}/worker/scripts/Processor.js`);
+const PROCESSOR = new Processor();
 
-const PROCESSOR = new self.Processor();
-
-self.PortHandler.addEventListener("message", (event) => {
+PortHandler.addEventListener("message", (event) => {
     const port = event.port;
     const {id, action, type = "", data = {}} = event.data;
     switch (type) {
@@ -15,7 +13,7 @@ self.PortHandler.addEventListener("message", (event) => {
                 PROCESSOR.debug = value;
             } else if (action == "get") {
                 const res = PROCESSOR.debug;
-                self.PortHandler.sendOne(port, {id, type, data: res});
+                PortHandler.sendOne(port, {id, type, data: res});
             }
         } break;
         case "clearGraph": {
@@ -47,15 +45,15 @@ self.PortHandler.addEventListener("message", (event) => {
         case "getRedirect": {
             const {source, target} = data;
             const res = PROCESSOR.getRedirect(source, target);
-            self.PortHandler.sendOne(port, {id, type, data: res});
+            PortHandler.sendOne(port, {id, type, data: res});
         } break;
         case "getEdges": {
             const res = PROCESSOR.getEdges();
-            self.PortHandler.sendOne(port, {id, type, data: res});
+            PortHandler.sendOne(port, {id, type, data: res});
         } break;
         case "getTargetNodes": {
             const res = PROCESSOR.getTargetNodes();
-            self.PortHandler.sendOne(port, {id, type, data: res});
+            PortHandler.sendOne(port, {id, type, data: res});
         } break;
         case "addReachable": {
             const {target} = data;
@@ -71,7 +69,7 @@ self.PortHandler.addEventListener("message", (event) => {
         case "traverse": {
             const {startNode} = data;
             const res = PROCESSOR.traverse(startNode);
-            self.PortHandler.sendAll({type, data: res});
+            PortHandler.sendAll({type, data: res});
         } break;
         case "set": {
             const {key, value} = data;
@@ -84,23 +82,23 @@ self.PortHandler.addEventListener("message", (event) => {
         case "get": {
             const {ref} = data;
             const res = PROCESSOR.get(ref);
-            self.PortHandler.sendOne(port, {id, type, data: res});
+            PortHandler.sendOne(port, {id, type, data: res});
         } break;
         case "getAll": {
             const res = PROCESSOR.getAll();
-            self.PortHandler.sendOne(port, {id, type, data: res});
+            PortHandler.sendOne(port, {id, type, data: res});
         } break;
         case "has": {
             const {ref} = data;
             const res = PROCESSOR.has(ref);
-            self.PortHandler.sendOne(port, {id, type, data: res});
+            PortHandler.sendOne(port, {id, type, data: res});
         } break;
         case "reset": {
             PROCESSOR.reset();
         } break;
         case "isDirty": {
             const res = PROCESSOR.isDirty();
-            self.PortHandler.sendOne(port, {id, type, data: res});
+            PortHandler.sendOne(port, {id, type, data: res});
         } break;
     }
 });

@@ -1,3 +1,7 @@
+/**
+ * port handler for any kind of worker to unify usage
+ */
+
 const PORTS = new Set;
 
 class PortHandler extends EventTarget {
@@ -50,4 +54,4 @@ class PortHandler extends EventTarget {
 
 }
 
-self.PortHandler = new PortHandler();
+export default new PortHandler();

@@ -41,7 +41,7 @@ const TRANSPILERS = {
     "at":       (logic) => logic.el ? `((val("${escape(logic.node)}")||0)&&${buildLogic(logic.el)})` : `(val("${escape(logic.node)}")||0)`,
     "mixin":    (logic) => `exec("${escape(logic.el)}")`,
     "function": (logic) => `exec("${escape(logic.el)}"${functionParams(logic.params)})`,
-    "filter":     (logic) => `filter("${escape(logic.el)}","${escape(logic.value)}")`
+    "data":     (logic) => `data("${escape(logic.el)}","${escape(logic.value)}")`
 };
 
 const dependencies = new Set();

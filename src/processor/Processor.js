@@ -1,246 +1,5 @@
-const Compiler = (() => {
-    const TRANSPILERS = {
-        /* literals */
-        "true":     (logic) => "1",
-        "false":    (logic) => "0",
-        "string":   (logic) => escape(logic.el),
-        "number":   (logic) => toNumber(logic.el),
-        "value":    (logic) => `(val("${escape(logic.el)}")||0)`,
-        "pointer":  (logic) => `(val(val("${escape(logic.el)}")||"")||0)`,
-        "state":    (logic) => `(val("${escape(logic.el)}")||"")=="${escape(logic.value)}"`,
-    
-        /* operators */
-        "and":      (logic) => `${multiElementOperation(logic.el, "&&")}`,
-        "nand":     (logic) => `!${multiElementOperation(logic.el, "&&")}`,
-        "or":       (logic) => `${multiElementOperation(logic.el, "||")}`,
-        "nor":      (logic) => `!${multiElementOperation(logic.el, "||")}`,
-        "not":      (logic) => `!(${buildLogic(logic.el)})`,
-        "xor":      (logic) => `${twoElementOperation(logic.el, "^") || 1}`,
-        "xnor":     (logic) => `!${twoElementOperation(logic.el, "^") || 1}`,
-    
-        /* restrictors */
-        "min":      (logic) => `(${buildLogic(logic.el)}>=${escape(logic.value, 0)})`,
-        "max":      (logic) => `(${buildLogic(logic.el)}<=${escape(logic.value, 0)})`,
-    
-        /* comparators */
-        "eq":       (logic) => twoElementOperation(logic.el, "=="),
-        "neq":      (logic) => twoElementOperation(logic.el, "!="),
-        "lt":       (logic) => twoElementOperation(logic.el, "<"),
-        "lte":      (logic) => twoElementOperation(logic.el, "<="),
-        "gt":       (logic) => twoElementOperation(logic.el, ">"),
-        "gte":      (logic) => twoElementOperation(logic.el, ">="),
-    
-        /* math */
-        "add":      (logic) => mathMultiElementOperation(logic.el, "+"),
-        "sub":      (logic) => mathMultiElementOperation(logic.el, "-"),
-        "mul":      (logic) => mathMultiElementOperation(logic.el, "*"),
-        "div":      (logic) => mathMultiElementOperation(logic.el, "/"),
-        "mod":      (logic) => mathMultiElementOperation(logic.el, "%"),
-        "pow":      (logic) => mathTwoElementOperation(logic.el, "**"),
-    
-        /* special */
-        "at":       (logic) => logic.el ? `((val("${escape(logic.node)}")||0)&&${buildLogic(logic.el)})` : `(val("${escape(logic.node)}")||0)`,
-        "mixin":    (logic) => `execute("${escape(logic.el)}")`
-    };
-    
-    const dependencies = new Set();
-    
-    /* STRINGS */
-    function escape(str, def = "") {
-        if (typeof str != "string") {
-            if (typeof str == "number" && !isNaN(str)) {
-                return str;
-            }
-            return def;
-        }
-        const res = str.replace(/[\\"]/g, "\\$&");
-        dependencies.add(res);
-        return res;
-    }
-    
-    /* ELEMENTS */
-    function twoElementOperation(els, join) {
-        if (els.length == 0) {
-            return 0;
-        }
-        if (els.length == 1) {
-            return buildLogic(els[0]);
-        }
-        return `(${buildLogic(els[0])}${join}${buildLogic(els[1])})`;
-    }
-    
-    function multiElementOperation(els, join) {
-        if (els.length == 0) {
-            return 0;
-        }
-        if (els.length == 1) {
-            return buildLogic(els[0]);
-        }
-        return `(${els.map(buildLogic).join(join)})`;
-    }
-    
-    /* MATH */
-    function toNumber(val) {
-        return `(parseInt(${val})||0)`
-    }
-    
-    function mathTwoElementOperation(els, join) {
-        if (els.length == 0) {
-            return 0;
-        }
-        if (els.length == 1) {
-            return buildLogic(els[0]);
-        }
-        return toNumber(`${buildLogic(toNumber(els[0]))}${join}${buildLogic(toNumber(els[1]))}`);
-    }
-    
-    function mathMultiElementOperation(els, join) {
-        if (els.length == 0) {
-            return 0;
-        }
-        if (els.length == 1) {
-            return buildLogic(els[0]);
-        }
-        return toNumber(`${els.map(buildLogic).map(toNumber).join(join)}`);
-    }
-    
-    /* INITIATOR */
-    function buildLogic(logic) {
-        if (typeof logic != "object") {
-            logic = {type: logic};
-        }
-        if (TRANSPILERS[logic.type] != null) {
-            return TRANSPILERS[logic.type](logic);
-        }
-        return 0;
-    }
-    
-    class Compiler {
-    
-        compile(logic) {
-            const buf = buildLogic(logic);
-            const fn = new Function("val", "execute", `return ${buf}`);
-            Object.defineProperty(fn, "requires", {value: dependencies});
-            dependencies.clear();
-            return fn;
-        }
-    
-    }
-
-    return new Compiler();
-})();
-
-const NodeFactory = (() => {
-    const EDGES = new WeakMap();
-    const NAME = new WeakMap();
-
-    class Node {
-
-        constructor(name) {
-            EDGES.set(this, new Map());
-            NAME.set(this, name);
-        }
-
-        getName() {
-            return NAME.get(this);
-        }
-
-        append(node, condition) {
-            if (node instanceof Node) {
-                const edges = EDGES.get(this);
-                edges.set(node.getName(), new Edge(this, node, condition));
-            } else {
-                throw new TypeError("Expected type Node");
-            }
-        }
-
-        remove(node) {
-            if (node instanceof Node) {
-                const edges = EDGES.get(this);
-                edges.delete(node.getName());
-            } else {
-                throw new TypeError("Expected type Node");
-            }
-        }
-
-        getTargets() {
-            const edges = EDGES.get(this);
-            return edges.keys();
-        }
-
-        getEdge(name) {
-            const edges = EDGES.get(this);
-            return edges.get(name);
-        }
-
-        toString() {
-            return this.getName();
-        }
-        
-    }
-
-    const SOURCE = new WeakMap();
-    const TARGET = new WeakMap();
-    const CONDITION = new WeakMap();
-
-    class Edge {
-
-        constructor(source, target, condition) {
-            SOURCE.set(this, source);
-            TARGET.set(this, target);
-            CONDITION.set(this, condition);
-        }
-
-        getCondition() {
-            return CONDITION.get(this);
-        }
-
-        getTarget() {
-            return TARGET.get(this);
-        }
-
-        getSource() {
-            return SOURCE.get(this);
-        }
-
-        toString() {
-            return `${SOURCE.get(this)} => ${TARGET.get(this)}`;
-        }
-
-    }
-
-    /* node factory */
-    const NODES = new WeakMap();
-
-    return class NodeFactory {
-
-        constructor() {
-            NODES.set(this, new Map());
-        }
-
-        reset() {
-            const nodes = NODES.get(this);
-            nodes.clear();
-        }
-
-        get(name) {
-            const nodes = NODES.get(this);
-            if (nodes.has(name)) {
-                return nodes.get(name);
-            }
-            const node = new Node(name);
-            nodes.set(name, node);
-            return node;
-        }
-
-        getNames() {
-            const nodes = NODES.get(this);
-            return nodes.keys();
-        }
-
-    }
-
-})();
+import NodeFactory from "./NodeFactory.js";
+import Compiler from "./Compiler.js";
 
 function mapToObj(src) {
     const res = {};
@@ -268,7 +27,30 @@ const NODES = new WeakMap();
 const REDIRECT_MATRIX = new WeakMap();
 const FORCED_REACHABLE = new WeakMap();
 
-self.Processor = class Processor {
+function changeNodeData(node, srcNode, newData) {
+    const data = srcNode.getAllData();
+    for (const name in newData) {
+        data[name] = data[name] || {};
+        for (const key in newData[name]) {
+            const value = data[name][key] ?? true;
+            data[name][key] = value && newData[name][key];
+        }
+    }
+    let changed = false;
+    for (const name in data) {
+        for (const key in data[name]) {
+            const value = data[name][key];
+            const oldValue = node.getData(name, key);
+            if (oldValue == null || (!oldValue && value)) {
+                node.setData(name, key, value);
+                changed = true;
+            }
+        }
+    }
+    return changed;
+}
+
+export default class Processor {
 
     constructor(debug = false) {
         NODES.set(this, new NodeFactory());
@@ -307,9 +89,10 @@ self.Processor = class Processor {
             const children = config.edges[name];
             const node = nodeFactory.get(name);
             for (const child in children) {
-                const logic = children[child];
-                const fn = Compiler.compile(logic);
-                node.append(nodeFactory.get(child), fn);
+                const condition = children[child].condition;
+                const filter = children[child].filter;
+                const fn = Compiler.compile(condition);
+                node.append(nodeFactory.get(child), fn, filter);
                 if (!mem_o.has(child)) {
                     mem_o.set(child, false);
                 }
@@ -500,7 +283,7 @@ self.Processor = class Processor {
                 reachableNodes.add(name);
             }
 
-            const valueGetter = key => {
+            const getValue = key => {
                 if (allTargets.has(key) && reachableNodes.has(key)) {
                     return 1;
                 } else if (mem_i.has(key)) {
@@ -509,10 +292,16 @@ self.Processor = class Processor {
                 return 0;
             };
 
+            const getFilter = node => {
+                return (name, key) => {
+                    return node.getFilter(name, key) ?? true;
+                };
+            };
+
             const execute = name => {
                 if (mixins.has(name)) {
                     const fn = mixins.get(name);
-                    const res = fn(valueGetter, execute);
+                    const res = fn(getValue, execute);
                     if (debug == "extended") {
                         console.groupCollapsed(`execute mixin { ${name} }`);
                         console.log(fn.toString());
@@ -536,15 +325,16 @@ self.Processor = class Processor {
                 let counts = queue.length;
                 while (counts--) {
                     const edge = queue.shift();
+                    const srcNode = edge.getSource();
                     const condition = edge.getCondition();
                     if (debug == "extended") {
                         console.groupCollapsed(`traverse edge { ${edge} }`);
                         console.log(condition.toString());
                     }
-                    const cRes = condition(valueGetter, execute);
+                    const cRes = condition(getValue, getFilter(srcNode), execute);
                     if (cRes) {
                         changed = true;
-                        const name = this.getRedirect(edge.getSource().getName(), edge.getTarget().getName());
+                        const name = this.getRedirect(srcNode.getName(), edge.getTarget().getName());
                         if (debug == "extended") {
                             if (name != edge.getTarget().getName()) {
                                 console.log(`redirecting edge { ${edge} } to point to { ${name} }`);
@@ -557,7 +347,9 @@ self.Processor = class Processor {
                             for (const ch of targets) {
                                 const chEdge = node.getEdge(ch);
                                 const chName = this.getRedirect(chEdge.getSource().getName(), chEdge.getTarget().getName());
-                                if (!reachableNodes.has(chName)) {
+                                const chNode = nodeFactory.get(chName);
+                                const filterChanged = changeNodeData(chNode, srcNode, chEdge.getFilter());
+                                if (!reachableNodes.has(chName) || filterChanged) {
                                     queue.push(chEdge);
                                 }
                             }

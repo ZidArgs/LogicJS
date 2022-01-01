@@ -1,12 +1,6 @@
-import Processor from "./util/logic/Processor.js";
+import Processor from "./processor/Processor.js";
 
 const PROCESSOR = new Processor();
-
-function sendMessage(target, data) {
-    const ev = new Event("message");
-    ev.data = data;
-    target.dispatchEvent(ev);
-}
 
 class TreeLogicFakeWorker extends EventTarget {
 

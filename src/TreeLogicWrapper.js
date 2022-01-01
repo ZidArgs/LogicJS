@@ -16,7 +16,7 @@ export default class TreeLogic extends EventTarget {
                 const ev = new Event("logic");
                 ev.data = data;
                 this.dispatchEvent(ev);
-            } else if(msgRes.has(id)) {
+            } else if (msgRes.has(id)) {
                 const resolve = msgRes.get(id);
                 resolve(data);
             } else {
@@ -33,7 +33,7 @@ export default class TreeLogic extends EventTarget {
             const msgRes = MSG_RES.get(this);
             msgRes.set(msgCnt, resolve);
             msg.id = msgCnt;
-            const worker = WORKER.get(this); 
+            const worker = WORKER.get(this);
             worker.postMessage(msg)
         });
     }
@@ -41,7 +41,7 @@ export default class TreeLogic extends EventTarget {
     /*#*/__post(type, data) {
         return new Promise((resolve) => {
             const msg = {action: "post", type, data};
-            const worker = WORKER.get(this); 
+            const worker = WORKER.get(this);
             worker.postMessage(msg);
             resolve();
         });
