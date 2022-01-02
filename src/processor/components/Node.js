@@ -2,15 +2,13 @@ import Edge from "./Edge.js";
 
 const EDGES = new WeakMap();
 const NAME = new WeakMap();
-const FILTER = new WeakMap();
 const DATA = new WeakMap();
 
 export default class Node {
 
-    constructor(name, filter) {
+    constructor(name) {
         EDGES.set(this, new Map());
         NAME.set(this, name);
-        FILTER.set(this, filter);
         DATA.set(this, {});
     }
 
@@ -18,37 +16,21 @@ export default class Node {
         return NAME.get(this);
     }
 
-    setData(name, key, value) {
+    setData(name, value) {
         const data = DATA.get(this);
-        data[name] = {
-            ...data[name],
-            [key]: !!value
-        };
+        data[name] = value;
     }
 
-    getData(name, key) {
+    getData(name) {
         const data = DATA.get(this);
-        return data[name]?.[key];
+        return data[name];
     }
 
     getAllData() {
         const data = DATA.get(this);
         const res = {};
         for (const name in data) {
-            res[name] = {
-                ...data[name]
-            };
-        }
-        return res;
-    }
-
-    getFilter() {
-        const filter = FILTER.get(this);
-        const res = {};
-        for (const name in filter) {
-            res[name] = {
-                ...filter[name]
-            };
+            res[name] = data[name];
         }
         return res;
     }

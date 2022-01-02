@@ -2,14 +2,12 @@ import LogicEdge from "./LogicEdge.js";
 
 const EDGES = new WeakMap();
 const NAME = new WeakMap();
-const DATA = new WeakMap();
 
 export default class LogicNode {
 
-    constructor(name) {
+    constructor(name, data) {
         EDGES.set(this, new Map());
         NAME.set(this, name);
-        DATA.set(this, {});
     }
 
     getName() {
@@ -17,7 +15,7 @@ export default class LogicNode {
     }
 
     append(node, condition, data) {
-        if (node instanceof Node) {
+        if (node instanceof LogicNode) {
             const edges = EDGES.get(this);
             edges.set(node.getName(), new LogicEdge(this, node, condition, data));
         } else {
@@ -26,7 +24,7 @@ export default class LogicNode {
     }
 
     remove(node) {
-        if (node instanceof Node) {
+        if (node instanceof LogicNode) {
             const edges = EDGES.get(this);
             edges.delete(node.getName());
         } else {
@@ -49,22 +47,11 @@ export default class LogicNode {
         return !!edges.size;
     }
 
-    setData(name, key, value) {
-        const data = DATA.get(this);
-        data[name] = {
-            ...data[name],
-            [key]: !!value
-        };
-    }
-
-    toJSON() {
+    render() {
         const edges = EDGES.get(this);
-        const res = {
-            edges: {},
-            data: {}
-        }
+        const res = {};
         for (const [name, edge] of edges) {
-            res.edges[name] = edge.toJSON();
+            res[name] = edge.render();
         }
         return res;
     }

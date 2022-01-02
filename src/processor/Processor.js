@@ -1,5 +1,6 @@
 import NodeFactory from "./NodeFactory.js";
 import Compiler from "./Compiler.js";
+import DataWrapper from "./components/DataWrapper.js";
 
 function mapToObj(src) {
     const res = {};
@@ -27,27 +28,15 @@ const NODES = new WeakMap();
 const REDIRECT_MATRIX = new WeakMap();
 const FORCED_REACHABLE = new WeakMap();
 
-function changeNodeData(node, srcNode, newData) {
-    const data = srcNode.getAllData();
+function getWrapperIdent(name, data) {
+    return `${name}::${JSON.stringify(data, Object.keys(data).sort())}`
+}
+function getNewData(dataWrapper, newData, val, data, exec) {
+    const res = dataWrapper.getAllData();
     for (const name in newData) {
-        data[name] = data[name] || {};
-        for (const key in newData[name]) {
-            const value = data[name][key] ?? true;
-            data[name][key] = value && newData[name][key];
-        }
+        res[name] = newData[name]?.(val, data, exec);
     }
-    let changed = false;
-    for (const name in data) {
-        for (const key in data[name]) {
-            const value = data[name][key];
-            const oldValue = node.getData(name, key);
-            if (oldValue == null || (!oldValue && value)) {
-                node.setData(name, key, value);
-                changed = true;
-            }
-        }
-    }
-    return changed;
+    return res;
 }
 
 export default class Processor {
@@ -89,17 +78,21 @@ export default class Processor {
             const children = config.edges[name];
             const node = nodeFactory.get(name);
             for (const child in children) {
-                const condition = children[child].condition;
-                const filter = children[child].filter;
-                const fn = Compiler.compile(condition);
-                node.append(nodeFactory.get(child), fn, filter);
+                const logic = children[child].logic;
+                const data = children[child].data;
+                const dataFns = {};
+                for (const key in data) {
+                    dataFns[key] = Compiler.compile(data[key]);
+                }
+                const fn = Compiler.compile(logic);
+                node.append(nodeFactory.get(child), fn, dataFns);
                 if (!mem_o.has(child)) {
                     mem_o.set(child, false);
                 }
             }
         }
-        for (const name in config.logic) {
-            const logic = config.logic[name];
+        for (const name in config.mixins) {
+            const logic = config.mixins[name];
             const fn = Compiler.compile(logic);
             mixins.set(name, fn);
         }
@@ -110,7 +103,7 @@ export default class Processor {
         DIRTY.set(this, true);
     }
 
-    setEdge(source, target, value) {
+    setEdge(source, target, value, data) {
         const debug = DEBUG.get(this);
         const nodeFactory = NODES.get(this);
         if (debug) {
@@ -123,8 +116,12 @@ export default class Processor {
             node.remove(child);
             DIRTY.set(this, true);
         } else {
+            const dataFns = {};
+            for (const key in data) {
+                dataFns[key] = Compiler.compile(data[key]);
+            }
             const fn = Compiler.compile(value);
-            node.append(child, fn);
+            node.append(child, fn, dataFns);
             DIRTY.set(this, true);
         }
         DIRTY.set(this, true);
@@ -258,6 +255,7 @@ export default class Processor {
         const allTargets = this.getTargetNodes();
         let reachableCount = 0;
         const reachableNodes = new Set();
+        const traversedDataNodes = new Set();
         const changes = {};
         const mixins = MIXINS.get(this);
         const mem_o = MEM_O.get(this);
@@ -292,25 +290,27 @@ export default class Processor {
                 return 0;
             };
 
-            const getFilter = node => {
-                return (name, key) => {
-                    return node.getFilter(name, key) ?? true;
+            const getData = wrapper => {
+                return name => {
+                    return wrapper.getData(name);
                 };
             };
 
-            const execute = name => {
-                if (mixins.has(name)) {
-                    const fn = mixins.get(name);
-                    const res = fn(getValue, execute);
-                    if (debug == "extended") {
-                        console.groupCollapsed(`execute mixin { ${name} }`);
-                        console.log(fn.toString());
-                        console.log(`result: ${res}`);
-                        console.groupEnd(`execute mixin { ${name} }`);
+            const execute = wrapper => {
+                return (name, ...params) => {
+                    if (mixins.has(name)) {
+                        const fn = mixins.get(name);
+                        const res = fn(getValue, getData(wrapper), execute(wrapper), params);
+                        if (debug == "extended") {
+                            console.groupCollapsed(`execute mixin { ${name} }`);
+                            console.log(fn.toString());
+                            console.log(`result: ${res}`);
+                            console.groupEnd(`execute mixin { ${name} }`);
+                        }
+                        return res;
                     }
-                    return res;
-                }
-                return 0;
+                    return 0;
+                };
             };
 
             /* start traversion */
@@ -324,14 +324,15 @@ export default class Processor {
                 changed = false;
                 let counts = queue.length;
                 while (counts--) {
-                    const edge = queue.shift();
+                    const dataWrapper = queue.shift();
+                    const edge = dataWrapper.getEdge();
                     const srcNode = edge.getSource();
                     const condition = edge.getCondition();
                     if (debug == "extended") {
                         console.groupCollapsed(`traverse edge { ${edge} }`);
                         console.log(condition.toString());
                     }
-                    const cRes = condition(getValue, getFilter(srcNode), execute);
+                    const cRes = condition(getValue, getData(dataWrapper), execute(dataWrapper));
                     if (cRes) {
                         changed = true;
                         const name = this.getRedirect(srcNode.getName(), edge.getTarget().getName());
@@ -342,15 +343,18 @@ export default class Processor {
                         }
                         if (name != "") {
                             const node = nodeFactory.get(name);
+                            const wrapperIdent = getWrapperIdent(name, dataWrapper.getAllData());
+                            traversedDataNodes.add(wrapperIdent);
                             reachableNodes.add(name);
                             const targets = node.getTargets();
                             for (const ch of targets) {
                                 const chEdge = node.getEdge(ch);
                                 const chName = this.getRedirect(chEdge.getSource().getName(), chEdge.getTarget().getName());
-                                const chNode = nodeFactory.get(chName);
-                                const filterChanged = changeNodeData(chNode, srcNode, chEdge.getFilter());
-                                if (!reachableNodes.has(chName) || filterChanged) {
-                                    queue.push(chEdge);
+                                const newData = getNewData(dataWrapper, chEdge.getData(), getValue, getData(dataWrapper), execute);
+                                const newDataWrapper = new DataWrapper(chEdge, newData);
+                                const newWrapperIdent = getWrapperIdent(chName, newData);
+                                if (!traversedDataNodes.has(newWrapperIdent)) {
+                                    queue.push(newDataWrapper);
                                 }
                             }
                         }

@@ -64365,7 +64365,7 @@
             }
         }
     },
-    "logic": {
+    "mixins": {
         "mixin.hookshot[child]": {
             "type": "value",
             "el": "item.hookshot"

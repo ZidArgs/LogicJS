@@ -30,7 +30,7 @@
             }
         }
     },
-    "logic": {
+    "mixins": {
         "mix.foobar": {
             "type": "at",
             "node": "B",

@@ -1,24 +1,24 @@
-import LogicFunction from "./components/LogicFunction.js";
+import LogicMixin from "./components/LogicMixin.js";
 import LogicNode from "./components/LogicNode.js";
 
-const TREE = new WeakMap();
-const FUNCTIONS = new WeakMap();
+const EDGES = new WeakMap();
+const MIXINS = new WeakMap();
 
 export default class TreeLogic {
 
     constructor() {
-        TREE.set(this, new Map());
-        FUNCTIONS.set(this, new Map());
+        EDGES.set(this, new Map());
+        MIXINS.set(this, new Map());
     }
 
     getNode(name) {
-        const tree = TREE.get(this);
-        if (!tree.has(name)) {
+        const edges = EDGES.get(this);
+        if (!edges.has(name)) {
             const node = new LogicNode(name);
-            tree.set(name, node);
+            edges.set(name, node);
             return node;
         }
-        return tree.get(name);
+        return edges.get(name);
     }
 
     setEdge(source, target, logic, data) {
@@ -33,17 +33,11 @@ export default class TreeLogic {
         sNode.remove(tNode);
     }
 
-    loadTree(config) {
+    loadEdges(config) {
         for (const name in config) {
             const node = config[name];
             if (node == null) continue;
-            if (node.edges == null) {
-                this.loadNode(name, node);
-            } else {
-                this.loadNode(name, node.edges);
-                const sNode = this.getNode(name);
-                sNode.setData(node.data);
-            }
+            this.loadNode(name, node);
         }
     }
 
@@ -59,40 +53,48 @@ export default class TreeLogic {
         }
     }
 
-    setFunction(name, logic, params) {
-        const functions = FUNCTIONS.get(this);
-        functions.set(name, new LogicFunction(logic, params));
+    setMixin(name, logic, params) {
+        const mixins = MIXINS.get(this);
+        mixins.set(name, new LogicMixin(logic, params));
     }
 
-    removeFunction(name) {
-        const functions = FUNCTIONS.get(this);
-        functions.delete(name);
+    removeMixin(name) {
+        const mixins = MIXINS.get(this);
+        mixins.delete(name);
     }
 
-    loadFunctions(config) {
+    loadMixins(config) {
         for (const name in config) {
             const fn = config[name];
             if (fn == null) continue;
             if (fn.logic == null) {
-                this.setFunction(name, new LogicFunction(fn));
+                this.setMixin(name, fn);
             } else {
-                this.setFunction(name, new LogicFunction(fn.logic, fn.params));
+                this.setMixin(name, fn.logic, fn.params);
             }
         }
     }
 
-    toJSON() {
-        const tree = TREE.get(this);
-        const functions = FUNCTIONS.get(this);
+    loadLogic(config) {
+        this.loadEdges(config.edges);
+        this.loadMixins(config.mixins);
+    }
+
+    render() {
+        const edges = EDGES.get(this);
+        const mixins = MIXINS.get(this);
         const res = {
-            tree: {},
-            functions: {}
+            edges: {},
+            mixins: {}
         }
-        for (const [name, node] of tree) {
-            res.tree[name] = node.toJSON();
+        for (const [name, node] of edges) {
+            if (node.hasEdges()) {
+                res.edges[name] = node.render();
+            }
         }
-        for (const [name, fn] of functions) {
-            res.functions[name] = fn.toJSON();
+        for (const [name, fn] of mixins) {
+            const mixin = fn.render();
+            res.mixins[name] = mixin;
         }
         return res;
     }

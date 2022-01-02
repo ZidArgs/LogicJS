@@ -17,18 +17,18 @@ function parseParams(params) {
     }
 }
 
-export default class LogicFunction {
+export default class LogicMixin {
 
     constructor(logic, params) {
         LOGIC.set(this, logic);
         PARAMS.set(this, parseParams(params));
     }
 
-    toJSON() {
+    render() {
         return {
             logic: LOGIC.get(this),
             params: PARAMS.get(this)
-        }
+        };
     }
 
 }

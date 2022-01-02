@@ -1,0 +1,55 @@
+{
+    "edges": {
+        "root": {
+            "A": {
+                "logic": {
+                    "type": "or",
+                    "el": [
+                        {
+                            "type": "value",
+                            "el": "test_1"
+                        },
+                        {
+                            "type": "value",
+                            "el": "test_2"
+                        }
+                    ]
+                }
+            }
+        },
+        "A": {
+            "B": {
+                "logic": {
+                    "type": "at",
+                    "node": "C",
+                    "el": {
+                        "type": "true"
+                    }
+                }
+            },
+            "C": {
+                "logic": {
+                    "type": "value",
+                    "el": "test_3"
+                }
+            },
+            "D": {
+                "logic": {
+                    "type": "mixin",
+                    "el": "mix.foobar"
+                }
+            }
+        }
+    },
+    "mixins": {
+        "mix.foobar": {
+            "logic": {
+                "type": "at",
+                "node": "B",
+                "el": {
+                    "type": "true"
+                }
+            }
+        }
+    }
+}

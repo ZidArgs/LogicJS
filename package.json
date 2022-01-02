@@ -4,7 +4,8 @@
   "description": "Tree Logic Processor for JS Applications",
   "type": "module",
   "scripts": {
-    "test": "serve . -p 12000"
+    "test": "serve . -p 12000",
+    "convert": "node _demo/converter.js"
   },
   "repository": {
     "type": "git",

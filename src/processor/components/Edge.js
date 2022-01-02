@@ -1,23 +1,23 @@
 const SOURCE = new WeakMap();
 const TARGET = new WeakMap();
-const CONDITION = new WeakMap();
-const FILTER = new WeakMap();
+const LOGIC = new WeakMap();
+const DATA = new WeakMap();
 
 export default class Edge {
 
-    constructor(source, target, condition, filter) {
+    constructor(source, target, logic, data) {
         SOURCE.set(this, source);
         TARGET.set(this, target);
-        CONDITION.set(this, condition);
-        FILTER.set(this, filter);
+        LOGIC.set(this, logic);
+        DATA.set(this, data);
     }
 
-    getCondition() {
-        return CONDITION.get(this);
+    getLogic() {
+        return LOGIC.get(this);
     }
 
-    getFilter() {
-        return FILTER.get(this);
+    getData() {
+        return DATA.get(this);
     }
 
     getTarget() {
