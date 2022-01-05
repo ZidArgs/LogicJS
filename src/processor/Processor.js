@@ -1,6 +1,7 @@
 import NodeFactory from "./NodeFactory.js";
 import Compiler from "./Compiler.js";
 import DataWrapper from "./components/DataWrapper.js";
+import TraverseDataMap from "./components/TraverseDataMap.js";
 
 function mapToObj(src) {
     const res = {};
@@ -27,17 +28,6 @@ const NODES = new WeakMap();
 
 const REDIRECT_MATRIX = new WeakMap();
 const FORCED_REACHABLE = new WeakMap();
-
-function getWrapperIdent(name, data) {
-    return `${name}::${JSON.stringify(data, Object.keys(data).sort())}`
-}
-function getNewData(dataWrapper, newData, val, data, exec) {
-    const res = dataWrapper.getAllData();
-    for (const name in newData) {
-        res[name] = newData[name]?.(val, data, exec);
-    }
-    return res;
-}
 
 export default class Processor {
 
@@ -254,8 +244,7 @@ export default class Processor {
         const nodeFactory = NODES.get(this);
         const allTargets = this.getTargetNodes();
         let reachableCount = 0;
-        const reachableNodes = new Set();
-        const traversedDataNodes = new Set();
+        const traversedDataMap = new TraverseDataMap();
         const changes = {};
         const mixins = MIXINS.get(this);
         const mem_o = MEM_O.get(this);
@@ -278,11 +267,11 @@ export default class Processor {
             }
 
             for (const name of forcedReachable) {
-                reachableNodes.add(name);
+                traversedDataMap.add(name);
             }
 
             const getValue = key => {
-                if (allTargets.has(key) && reachableNodes.has(key)) {
+                if (allTargets.has(key) && traversedDataMap.has(key)) {
                     return 1;
                 } else if (mem_i.has(key)) {
                     return mem_i.get(key);
@@ -311,6 +300,17 @@ export default class Processor {
                     }
                     return 0;
                 };
+            };
+
+            const getNewData = (dataWrapper, newData) => {
+                const res = dataWrapper.getAllData();
+                for (const name in newData) {
+                    const fn = newData[name];
+                    if (typeof fn == "function") {
+                        res[name] = fn(getValue, getData(dataWrapper), execute);
+                    }
+                }
+                return res;
             };
 
             /* start traversion */
@@ -343,17 +343,14 @@ export default class Processor {
                         }
                         if (name != "") {
                             const node = nodeFactory.get(name);
-                            const wrapperIdent = getWrapperIdent(name, dataWrapper.getAllData());
-                            traversedDataNodes.add(wrapperIdent);
-                            reachableNodes.add(name);
+                            traversedDataMap.setData(name, dataWrapper);
                             const targets = node.getTargets();
                             for (const ch of targets) {
                                 const chEdge = node.getEdge(ch);
                                 const chName = this.getRedirect(chEdge.getSource().getName(), chEdge.getTarget().getName());
-                                const newData = getNewData(dataWrapper, chEdge.getData(), getValue, getData(dataWrapper), execute);
+                                const newData = getNewData(dataWrapper, chEdge.getData());
                                 const newDataWrapper = new DataWrapper(chEdge, newData);
-                                const newWrapperIdent = getWrapperIdent(chName, newData);
-                                if (!traversedDataNodes.has(newWrapperIdent)) {
+                                if (!traversedDataMap.has(chName, newDataWrapper)) {
                                     queue.push(newDataWrapper);
                                 }
                             }

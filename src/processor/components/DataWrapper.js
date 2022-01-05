@@ -33,7 +33,8 @@ export default class DataWrapper {
     }
 
     toString() {
-        return ;
+        const data = this.getAllData();
+        return JSON.stringify(data, Object.keys(data).sort());
     }
     
 }
