@@ -65666,7 +65666,7 @@
                         },
                         {
                             "type": "value",
-                            "el": "skip.hidden_grotto_no_agony"
+                            "el": "skip.grottos_without_agony"
                         }
                     ]
                 }
@@ -65688,7 +65688,7 @@
                         },
                         {
                             "type": "value",
-                            "el": "skip.hidden_grotto_no_agony"
+                            "el": "skip.grottos_without_agony"
                         }
                     ]
                 }
@@ -65699,7 +65699,10 @@
             "el": [
                 {
                     "type": "mixin",
-                    "el": "function.can_play(item.song_storm)[child]"
+                    "el": "function.can_play",
+                    "params": [
+                        "item.song__storm"
+                    ]
                 },
                 {
                     "type": "or",
@@ -65710,7 +65713,7 @@
                         },
                         {
                             "type": "value",
-                            "el": "skip.hidden_grotto_no_agony"
+                            "el": "skip.grottos_without_agony"
                         }
                     ]
                 }
@@ -65721,7 +65724,10 @@
             "el": [
                 {
                     "type": "mixin",
-                    "el": "function.can_play(item.song_storm)[adult]"
+                    "el": "function.can_play",
+                    "params": [
+                        "item.song__storm"
+                    ]
                 },
                 {
                     "type": "or",
@@ -65732,7 +65738,7 @@
                         },
                         {
                             "type": "value",
-                            "el": "skip.hidden_grotto_no_agony"
+                            "el": "skip.grottos_without_agony"
                         }
                     ]
                 }
@@ -68341,6 +68347,22 @@
                 {
                     "type": "value",
                     "el": "item.song_scarecrow"
+                }
+            ]
+        },
+        "function.can_play": {
+            "type": "and",
+            "el": [
+                {
+                    "type": "value",
+                    "el": "item.ocarina"
+                },
+                {
+                    "type": "value",
+                    "el": {
+                        "type": "param",
+                        "el": 0
+                    }
                 }
             ]
         },

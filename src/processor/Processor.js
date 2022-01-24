@@ -1,5 +1,6 @@
 import NodeFactory from "./NodeFactory.js";
-import Compiler from "./Compiler.js";
+import EdgeCompiler from "./compiler/EdgeCompiler.js";
+import MixinCompiler from "./compiler/MixinCompiler.js";
 import DataWrapper from "./components/DataWrapper.js";
 import TraverseDataMap from "./components/TraverseDataMap.js";
 
@@ -76,9 +77,9 @@ export default class Processor {
                 const data = edge.data;
                 const dataFns = {};
                 for (const key in data) {
-                    dataFns[key] = Compiler.compile(data[key]);
+                    dataFns[key] = EdgeCompiler.compile(data[key]);
                 }
-                const fn = Compiler.compile(logic);
+                const fn = EdgeCompiler.compile(logic);
                 node.append(nodeFactory.get(child), fn, dataFns);
                 if (!mem_o.has(child)) {
                     mem_o.set(child, false);
@@ -89,7 +90,7 @@ export default class Processor {
             const mixin = config.mixins[name];
             const logic = mixin.logic;
             const params = mixin.params;
-            const fn = Compiler.compile(logic);
+            const fn = MixinCompiler.compile(logic);
             mixins.set(name, fn);
             mixinParams.set(name, params ?? []);
         }
@@ -115,9 +116,9 @@ export default class Processor {
         } else {
             const dataFns = {};
             for (const key in data) {
-                dataFns[key] = Compiler.compile(data[key]);
+                dataFns[key] = EdgeCompiler.compile(data[key]);
             }
-            const fn = Compiler.compile(value);
+            const fn = EdgeCompiler.compile(value);
             node.append(child, fn, dataFns);
             DIRTY.set(this, true);
         }
@@ -139,7 +140,7 @@ export default class Processor {
             mixins.delete(name);
             DIRTY.set(this, true);
         } else {
-            const fn = Compiler.compile(value);
+            const fn = MixinCompiler.compile(value);
             mixins.set(name, fn);
             DIRTY.set(this, true);
         }
@@ -314,10 +315,16 @@ export default class Processor {
                             }
                         }
 
-                        const res = fn(getValue, getData(wrapper), execute(wrapper), params);
                         if (debug == "extended") {
                             console.groupCollapsed(`execute mixin { ${name} }`);
                             console.log(fn.toString());
+                            console.log("default parameters: ", defParams);
+                            console.log("call parameters: ", params);
+                        }
+
+                        const res = fn(getValue, getData(wrapper), execute(wrapper), params);
+
+                        if (debug == "extended") {
                             console.log(`result: ${res}`);
                             console.groupEnd(`execute mixin { ${name} }`);
                         }

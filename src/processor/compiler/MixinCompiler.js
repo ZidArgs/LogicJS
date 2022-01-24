@@ -2,11 +2,11 @@ const TRANSPILERS = {
     /* literals */
     "true":     (logic) => "1",
     "false":    (logic) => "0",
-    "string":   (logic) => `"${escapeString(logic.el)}"`,
+    "string":   (logic) => `${escapeString(logic.el)}`,
     "number":   (logic) => toNumber(logic.el),
-    "value":    (logic) => `(val("${escape(logic.el)}")||0)`,
-    "pointer":  (logic) => `(val(val("${escape(logic.el)}")||"")||0)`,
-    "state":    (logic) => `(val("${escape(logic.el)}")||"")=="${escape(logic.value)}"`,
+    "value":    (logic) => `(val(${escape(logic.el)})||0)`,
+    "pointer":  (logic) => `(val(val(${escape(logic.el)})||"")||0)`,
+    "state":    (logic) => `(val(${escape(logic.el)})||"")==${escape(logic.value)}`,
 
     /* operators */
     "and":      (logic) => `${multiElementOperation(logic.el, "&&")}`,
@@ -38,39 +38,43 @@ const TRANSPILERS = {
     "pow":      (logic) => mathTwoElementOperation(logic.el, "**"),
 
     /* mixins */
-    "mixin":    (logic) => `exec("${escape(logic.el)}"${functionParams(logic.params)})`,
-    "param":    (logic) => `param[${toNumber(logic.el)}]`,
+    "mixin":    (logic) => `exec(${escape(logic.el)}${functionParams(logic.params)})`,
+    "param":    (logic) => `params[${toNumber(logic.el)}]`,
 
     /* special */
     "if":       (logic) => `(${buildLogic(logic.el)}?${escape(logic.then ?? 0)}:${escape(logic.else ?? 0)})`,
-    "at":       (logic) => logic.el ? `((val("${escape(logic.node)}")||0)&&${buildLogic(logic.el)})` : `(val("${escape(logic.node)}")||0)`,
-    "data":     (logic) => `data("${escapeString(logic.el)}")`
+    "at":       (logic) => logic.el ? `((val(${escape(logic.node)})||0)&&${buildLogic(logic.el)})` : `(val(${escape(logic.node)})||0)`,
+    "data":     (logic) => `data(${escapeString(logic.el)})`
 };
 
 const dependencies = new Set();
 
 /* STRINGS */
-function escapeString(str, def = "") {
+function escapeString(str) {
     if (typeof str != "string") {
         if (typeof str == "number" && !isNaN(str)) {
-            return str;
+            return `"${str}"`;
         }
-        return def;
+        return `""`;
     }
-    return str.replace(/[\\"]/g, "\\$&");
+    const res = str.replace(/[\\"]/g, "\\$&");
+    return `"${res}"`;
 }
 
 /* ELEMENTS */
-function escape(str, def = "") {
+function escape(str) {
     if (typeof str != "string") {
-        if (typeof str == "number" && !isNaN(str)) {
+        if (typeof str == "number") {
+            if (isNaN(str)) {
+                return 0;
+            }
             return str;
         }
-        return def;
+        return buildLogic(str);
     }
     const res = str.replace(/[\\"]/g, "\\$&");
     dependencies.add(res);
-    return res;
+    return `"${res}"`;
 }
 
 function twoElementOperation(els, join) {
@@ -128,7 +132,7 @@ function functionParams(els) {
     if (els == null || els.length == 0) {
         return "";
     }
-    return `,${els.map(escapeParam).join(",")}`;
+    return `,"${els.map(escapeParam).join(",")}"`;
 }
 
 /* INITIATOR */
@@ -144,19 +148,9 @@ function buildLogic(logic) {
     return 0;
 }
 
-class Compiler {
+class MixinCompiler {
 
     compile(logic) {
-        const buf = buildLogic(logic);
-        const fn = new Function("val", "data", "exec", `return ${buf}`);
-        Object.defineProperty(fn, "requires", {
-            value: dependencies
-        });
-        dependencies.clear();
-        return fn;
-    }
-
-    compileMixin(logic) {
         const buf = buildLogic(logic);
         const fn = new Function("val", "data", "exec", "params", `return ${buf}`);
         Object.defineProperty(fn, "requires", {
@@ -168,4 +162,4 @@ class Compiler {
 
 }
 
-export default new Compiler;
+export default new MixinCompiler;

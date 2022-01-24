@@ -1,5 +1,9 @@
-import TreeLogicWrapper from "./TreeLogicWrapper.js";
+import TreeLogicWrapper from "./util/TreeLogicWrapper.js";
 
+/* debug */
+const SUPRESS_WORKERS = false;
+
+/* check wether the browser supports module workers */
 const SUPPORTS_WORKER_TYPE = (() => {
     let supports = false;
     const tester = {
@@ -37,11 +41,11 @@ async function importModule(url) {
         .catch(err => { throw new Error(`Error appending module "${url}" ${err}`) });
 }
 
-export async function getProcessor(noWorker) {
+export async function getProcessor() {
     const workerPath = getAbsolutePath("./worker/TreeLogic.w.js");
     const name = "TreeLogic";
     const type = "module";
-    if (!noWorker) {
+    if (!SUPRESS_WORKERS) {
         if ("SharedWorker" in window && SUPPORTS_WORKER_TYPE) {
             const worker = new SharedWorker(workerPath, {
                 name,
@@ -59,7 +63,7 @@ export async function getProcessor(noWorker) {
             return new TreeLogicWrapper(worker);
         }
     }
-    const [TreeLogicFakeWorker] = await importModule("./TreeLogicFakeWorker.js");
+    const [TreeLogicFakeWorker] = await importModule("./util/TreeLogicFakeWorker.js");
     return TreeLogicFakeWorker;
 }
 

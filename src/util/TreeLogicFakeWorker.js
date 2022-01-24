@@ -1,4 +1,4 @@
-import Processor from "./processor/Processor.js";
+import Processor from "../processor/Processor.js";
 
 const PROCESSOR = new Processor();
 
