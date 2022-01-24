@@ -28,7 +28,7 @@ export default class LogicEdge {
         return SOURCE.get(this);
     }
 
-    render() {
+    generate() {
         return {
             logic: this.getLogic(),
             data: this.getData()

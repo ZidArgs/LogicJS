@@ -125,7 +125,7 @@ function escapeParam(val) {
 }
 
 function functionParams(els) {
-    if (els.length == 0) {
+    if (els == null || els.length == 0) {
         return "";
     }
     return `,${els.map(escapeParam).join(",")}`;
@@ -134,7 +134,9 @@ function functionParams(els) {
 /* INITIATOR */
 function buildLogic(logic) {
     if (typeof logic != "object") {
-        logic = {type: logic};
+        logic = {
+            type: logic
+        };
     }
     if (TRANSPILERS[logic.type] != null) {
         return TRANSPILERS[logic.type](logic);
@@ -146,8 +148,20 @@ class Compiler {
 
     compile(logic) {
         const buf = buildLogic(logic);
+        const fn = new Function("val", "data", "exec", `return ${buf}`);
+        Object.defineProperty(fn, "requires", {
+            value: dependencies
+        });
+        dependencies.clear();
+        return fn;
+    }
+
+    compileMixin(logic) {
+        const buf = buildLogic(logic);
         const fn = new Function("val", "data", "exec", "params", `return ${buf}`);
-        Object.defineProperty(fn, "requires", {value: dependencies});
+        Object.defineProperty(fn, "requires", {
+            value: dependencies
+        });
         dependencies.clear();
         return fn;
     }

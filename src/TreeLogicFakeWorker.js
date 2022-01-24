@@ -68,8 +68,8 @@ class TreeLogicFakeWorker extends EventTarget {
         PROCESSOR.clearReachables();
     }
     
-    async traverse(startNode) {
-        const res = PROCESSOR.traverse(startNode);
+    async traverse(startNode, startData) {
+        const res = PROCESSOR.traverse(startNode, startData);
         const ev = new Event("logic");
         ev.data = res;
         this.dispatchEvent(ev);

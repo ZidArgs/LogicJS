@@ -5,7 +5,10 @@ const PARAMS = new WeakMap();
 function parseParams(params) {
     if (typeof params == "object") {
         if (Array.isArray(params)) {
-            return params.reduce((a, v) => ({ ...a, [v]: undefined}), {});
+            return params.reduce((a, v) => ({
+                ...a,
+                [v]: undefined
+            }), {});
         } else {
             const res = {};
             for (const name in params) {
@@ -24,7 +27,7 @@ export default class LogicMixin {
         PARAMS.set(this, parseParams(params));
     }
 
-    render() {
+    generate() {
         return {
             logic: LOGIC.get(this),
             params: PARAMS.get(this)

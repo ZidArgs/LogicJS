@@ -14,5 +14,11 @@
   "author": "Denis Peters (ZidArgs)",
   "license": "MIT",
   "homepage": "https://bitbucket.org/zidargs/treelogicjs/src",
-  "dependencies": {}
+  "dependencies": {},
+  "devDependencies": {
+    "@babel/core": "^7.16.10",
+    "@babel/eslint-parser": "^7.16.5",
+    "@babel/plugin-syntax-top-level-await": "^7.14.5",
+		"eslint": "^6.0.0"
+  }
 }

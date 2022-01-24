@@ -21,6 +21,7 @@ function setToArray(src) {
 
 const DIRTY = new WeakMap();
 const MIXINS = new WeakMap();
+const MIXIN_PARAMS = new WeakMap();
 const MEM_I = new WeakMap();
 const MEM_O = new WeakMap();
 const DEBUG = new WeakMap();
@@ -34,6 +35,7 @@ export default class Processor {
     constructor(debug = false) {
         NODES.set(this, new NodeFactory());
         MIXINS.set(this, new Map());
+        MIXIN_PARAMS.set(this, new Map());
         MEM_I.set(this, new Map());
         MEM_O.set(this, new Map());
         REDIRECT_MATRIX.set(this, new Map());
@@ -59,6 +61,7 @@ export default class Processor {
         const debug = DEBUG.get(this);
         const nodeFactory = NODES.get(this);
         const mixins = MIXINS.get(this);
+        const mixinParams = MIXIN_PARAMS.get(this);
         const mem_o = MEM_O.get(this);
         if (debug) {
             console.groupCollapsed("GRAPH LOGIC BUILD");
@@ -68,8 +71,9 @@ export default class Processor {
             const children = config.edges[name];
             const node = nodeFactory.get(name);
             for (const child in children) {
-                const logic = children[child].logic;
-                const data = children[child].data;
+                const edge = children[child];
+                const logic = edge.logic;
+                const data = edge.data;
                 const dataFns = {};
                 for (const key in data) {
                     dataFns[key] = Compiler.compile(data[key]);
@@ -82,9 +86,12 @@ export default class Processor {
             }
         }
         for (const name in config.mixins) {
-            const logic = config.mixins[name];
+            const mixin = config.mixins[name];
+            const logic = mixin.logic;
+            const params = mixin.params;
             const fn = Compiler.compile(logic);
             mixins.set(name, fn);
+            mixinParams.set(name, params ?? []);
         }
         if (debug) {
             console.timeEnd("build time");
@@ -156,7 +163,9 @@ export default class Processor {
         const debug = DEBUG.get(this);
         if (debug == "extended") {
             console.groupCollapsed("GRAPH LOGIC REDIRECT CHANGE");
-            console.log({[`${source} => ${target}`]: reroute});
+            console.log({
+                [`${source} => ${target}`]: reroute
+            });
             console.groupEnd("GRAPH LOGIC REDIRECT CHANGE");
         }
         const redirectMatrix = REDIRECT_MATRIX.get(this);
@@ -173,9 +182,13 @@ export default class Processor {
             console.groupCollapsed("GRAPH LOGIC REDIRECT CHANGE");
         }
         const redirectMatrix = REDIRECT_MATRIX.get(this);
-        for (const {source, target, reroute} of redirects) {
+        for (const {
+            source, target, reroute
+        } of redirects) {
             if (debug == "extended") {
-                console.log({[`${source} => ${target}`]: reroute});
+                console.log({
+                    [`${source} => ${target}`]: reroute
+                });
             }
             if (reroute == null) {
                 redirectMatrix.delete(`${source} => ${target}`);
@@ -240,18 +253,22 @@ export default class Processor {
     }
 
     /* broad search */
-    traverse(startNode) {
+    traverse(startNode, startData = {}) {
         const nodeFactory = NODES.get(this);
         const allTargets = this.getTargetNodes();
         let reachableCount = 0;
         const traversedDataMap = new TraverseDataMap();
         const changes = {};
         const mixins = MIXINS.get(this);
+        const mixinParams = MIXIN_PARAMS.get(this);
         const mem_o = MEM_O.get(this);
         const mem_i = MEM_I.get(this);
         const debug = DEBUG.get(this);
         const start = nodeFactory.get(startNode);
+
         if (start != null) {
+            const startDataWrapper = new DataWrapper(start, startData);
+
             const forcedReachable = FORCED_REACHABLE.get(this);
             if (debug) {
                 const redirectMatrix = REDIRECT_MATRIX.get(this);
@@ -289,6 +306,14 @@ export default class Processor {
                 return (name, ...params) => {
                     if (mixins.has(name)) {
                         const fn = mixins.get(name);
+                        const defParams = mixinParams.get(name);
+
+                        for (const i in defParams) {
+                            if (typeof params[i] == "undefined") {
+                                params[i] = defParams[i];
+                            }
+                        }
+
                         const res = fn(getValue, getData(wrapper), execute(wrapper), params);
                         if (debug == "extended") {
                             console.groupCollapsed(`execute mixin { ${name} }`);
@@ -302,8 +327,8 @@ export default class Processor {
                 };
             };
 
-            const getNewData = (dataWrapper, newData) => {
-                const res = dataWrapper.getAllData();
+            const getNewData = (dataWrapper, newData = {}) => {
+                const res = dataWrapper?.getAllData() ?? {};
                 for (const name in newData) {
                     const fn = newData[name];
                     if (typeof fn == "function") {
@@ -313,11 +338,17 @@ export default class Processor {
                 return res;
             };
 
+
             /* start traversion */
             const queue = [];
             for (const ch of start.getTargets()) {
                 const edge = start.getEdge(ch);
-                queue.push(edge);
+                const newData = getNewData(startDataWrapper, edge.getData());
+                const newDataWrapper = new DataWrapper(edge, newData);
+                queue.push(newDataWrapper);
+                if (debug == "extended") {
+                    console.log(`queue edge { ${edge} } with data`, newDataWrapper.getAllData());
+                }
             }
             let changed = true;
             while (!!queue.length && !!changed) {
@@ -327,13 +358,16 @@ export default class Processor {
                     const dataWrapper = queue.shift();
                     const edge = dataWrapper.getEdge();
                     const srcNode = edge.getSource();
-                    const condition = edge.getCondition();
+                    const condition = edge.getLogic();
                     if (debug == "extended") {
                         console.groupCollapsed(`traverse edge { ${edge} }`);
                         console.log(condition.toString());
                     }
                     const cRes = condition(getValue, getData(dataWrapper), execute(dataWrapper));
                     if (cRes) {
+                        if (debug == "extended") {
+                            console.log(`result: ${cRes}`);
+                        }
                         changed = true;
                         const name = this.getRedirect(srcNode.getName(), edge.getTarget().getName());
                         if (debug == "extended") {
@@ -352,27 +386,32 @@ export default class Processor {
                                 const newDataWrapper = new DataWrapper(chEdge, newData);
                                 if (!traversedDataMap.has(chName, newDataWrapper)) {
                                     queue.push(newDataWrapper);
+                                    if (debug == "extended") {
+                                        console.log(`queue edge { ${chEdge} } with data`, newDataWrapper.getAllData());
+                                    }
                                 }
                             }
                         }
                     } else {
-                        queue.push(edge);
-                    }
-                    if (debug == "extended") {
-                        console.log(`result: ${cRes}`);
-                        console.groupEnd(`traverse edge { ${edge} }`);
-                        if (reachableCount != reachableNodes.size) {
-                            console.log("reachable changed", Array.from(reachableNodes));
+                        queue.push(dataWrapper);
+                        if (debug == "extended") {
+                            console.log(`queue edge { ${edge} } with data`, dataWrapper.getAllData());
                         }
                     }
-                    reachableCount = reachableNodes.size;
+                    if (debug == "extended") {
+                        console.groupEnd(`traverse edge { ${edge} }`);
+                        if (reachableCount != traversedDataMap.size) {
+                            console.log("reachable changed", traversedDataMap.getAll());
+                        }
+                    }
+                    reachableCount = traversedDataMap.size;
                 }
             }
             /* end traversion */
 
             DIRTY.set(this, false);
             for (const ch of allTargets) {
-                const v = reachableNodes.has(ch);
+                const v = traversedDataMap.has(ch);
                 if (mem_o.get(ch) != v) {
                     mem_o.set(ch, v);
                     changes[ch] = v;
@@ -384,7 +423,7 @@ export default class Processor {
                 }
                 console.log("success");
                 console.timeEnd("execution time");
-                console.log("reachable", Array.from(reachableNodes));
+                console.log("reachable", traversedDataMap.getAll());
                 console.log("output", mapToObj(mem_o));
                 console.log("changes", changes);
                 console.groupEnd("GRAPH LOGIC EXECUTION");
@@ -397,7 +436,9 @@ export default class Processor {
         const debug = DEBUG.get(this);
         if (debug) {
             console.groupCollapsed("GRAPH LOGIC MEMORY CHANGE");
-            console.log({[key]: value});
+            console.log({
+                [key]: value
+            });
             console.groupEnd("GRAPH LOGIC MEMORY CHANGE");
         }
         const mem_i = MEM_I.get(this);
@@ -414,7 +455,9 @@ export default class Processor {
         if (values instanceof Map) {
             for (const [k, v] of values) {
                 if (debug) {
-                    console.log({[k]: v});
+                    console.log({
+                        [k]: v
+                    });
                 }
                 mem_i.set(k, v);
             }
@@ -422,7 +465,9 @@ export default class Processor {
             for (const k in values) {
                 const v = values[k];
                 if (debug) {
-                    console.log({[k]: v});
+                    console.log({
+                        [k]: v
+                    });
                 }
                 mem_i.set(k, v);
             }

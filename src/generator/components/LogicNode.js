@@ -47,11 +47,11 @@ export default class LogicNode {
         return !!edges.size;
     }
 
-    render() {
+    generate() {
         const edges = EDGES.get(this);
         const res = {};
         for (const [name, edge] of edges) {
-            res[name] = edge.render();
+            res[name] = edge.generate();
         }
         return res;
     }

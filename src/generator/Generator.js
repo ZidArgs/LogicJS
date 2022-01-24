@@ -4,7 +4,7 @@ import LogicNode from "./components/LogicNode.js";
 const EDGES = new WeakMap();
 const MIXINS = new WeakMap();
 
-export default class TreeLogic {
+export default class Generator {
 
     constructor() {
         EDGES.set(this, new Map());
@@ -80,7 +80,7 @@ export default class TreeLogic {
         this.loadMixins(config.mixins);
     }
 
-    render() {
+    run() {
         const edges = EDGES.get(this);
         const mixins = MIXINS.get(this);
         const res = {
@@ -89,11 +89,11 @@ export default class TreeLogic {
         }
         for (const [name, node] of edges) {
             if (node.hasEdges()) {
-                res.edges[name] = node.render();
+                res.edges[name] = node.generate();
             }
         }
         for (const [name, fn] of mixins) {
-            const mixin = fn.render();
+            const mixin = fn.generate();
             res.mixins[name] = mixin;
         }
         return res;

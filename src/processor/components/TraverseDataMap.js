@@ -53,4 +53,21 @@ export default class TraverseDataMap {
         }
     }
 
+    getAll() {
+        const reachables = REACHABLES.get(this);
+        const res = {};
+        for (const [name, reach] of reachables) {
+            res[name] = [];
+            for (const [, value] of reach) {
+                res[name].push(value.getAllData());
+            }
+        }
+        return res;
+    }
+
+    get size() {
+        const reachables = REACHABLES.get(this);
+        return reachables.size;
+    }
+
 }
