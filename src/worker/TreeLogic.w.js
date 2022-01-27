@@ -5,15 +5,11 @@ const PROCESSOR = new Processor();
 
 PortHandler.addEventListener("message", (event) => {
     const port = event.port;
-    const {
-        id, action, type = "", data = {}
-    } = event.data;
+    const {id, action, type = "", data = {}} = event.data;
     switch (type) {
         case "debug": {
             if (action == "post") {
-                const {
-                    value
-                } = data;
+                const {value} = data;
                 PROCESSOR.debug = value;
             } else if (action == "get") {
                 const res = PROCESSOR.debug;
@@ -28,42 +24,30 @@ PortHandler.addEventListener("message", (event) => {
             PROCESSOR.clearGraph();
         } break;
         case "load": {
-            const {
-                config
-            } = data;
+            const {config} = data;
             PROCESSOR.load(config);
         } break;
         case "setEdge": {
-            const {
-                source, target, value
-            } = data;
+            const {source, target, value} = data;
             PROCESSOR.setEdge(source, target, value);
         } break;
         case "setMixin": {
-            const {
-                name, value
-            } = data;
+            const {name, value} = data;
             PROCESSOR.setMixin(name, value);
         } break;
         case "clearRedirects": {
             PROCESSOR.clearRedirects();
         } break;
         case "setRedirect": {
-            const {
-                source, target, reroute
-            } = data;
+            const {source, target, reroute} = data;
             PROCESSOR.setRedirect(source, target, reroute);
         } break;
         case "setAllRedirects": {
-            const {
-                redirects
-            } = data;
+            const {redirects} = data;
             PROCESSOR.setAllRedirects(redirects);
         } break;
         case "getRedirect": {
-            const {
-                source, target
-            } = data;
+            const {source, target} = data;
             const res = PROCESSOR.getRedirect(source, target);
             PortHandler.sendOne(port, {
                 id,
@@ -88,15 +72,11 @@ PortHandler.addEventListener("message", (event) => {
             });
         } break;
         case "addReachable": {
-            const {
-                target
-            } = data;
+            const {target} = data;
             PROCESSOR.addReachable(target);
         } break;
         case "deleteReachable": {
-            const {
-                target
-            } = data;
+            const {target} = data;
             PROCESSOR.deleteReachable(target);
         } break;
         case "clearReachables": {
@@ -114,21 +94,15 @@ PortHandler.addEventListener("message", (event) => {
             });
         } break;
         case "set": {
-            const {
-                key, value
-            } = data;
+            const {key, value} = data;
             PROCESSOR.set(key, value);
         } break;
         case "setAll": {
-            const {
-                values
-            } = data;
+            const {values} = data;
             PROCESSOR.setAll(values);
         } break;
         case "get": {
-            const {
-                ref
-            } = data;
+            const {ref} = data;
             const res = PROCESSOR.get(ref);
             PortHandler.sendOne(port, {
                 id,
@@ -145,9 +119,7 @@ PortHandler.addEventListener("message", (event) => {
             });
         } break;
         case "has": {
-            const {
-                ref
-            } = data;
+            const {ref} = data;
             const res = PROCESSOR.has(ref);
             PortHandler.sendOne(port, {
                 id,

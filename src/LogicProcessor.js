@@ -15,8 +15,8 @@ const SUPPORTS_WORKER_TYPE = (() => {
     try {
         const worker = new Worker("blob://", tester);
         worker.terminate();
-    } catch(err) {
-        err
+    } catch {
+        console.warn("TreeLogicJS: no modular workers supported, switching to legacy mode");
     }
     return supports;
 })();
@@ -30,15 +30,15 @@ async function importModule(url) {
     return import(modulePath)
         .then(res => {
             try {
-                const {
-                    default: def, ...other
-                } = res ?? {};
+                const {default: def, ...other} = res ?? {};
                 return [def, other];
-            } catch(err) {
+            } catch (err) {
                 throw new Error(`Error extracting module\n${err}`)
             }
         })
-        .catch(err => { throw new Error(`Error appending module "${url}" ${err}`) });
+        .catch(err => {
+            throw new Error(`Error appending module "${url}" ${err}`)
+        });
 }
 
 export async function getProcessor() {
@@ -51,7 +51,6 @@ export async function getProcessor() {
                 name,
                 type
             });
-            worker.onerror
             worker.port.start();
             return new TreeLogicWrapper(worker.port);
         }

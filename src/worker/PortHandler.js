@@ -46,7 +46,9 @@ class PortHandler extends EventTarget {
     sendAllButOne(port, msg) {
         if (port instanceof MessagePort) {
             for (const p of PORTS) {
-                if (p == port) continue;
+                if (p == port) {
+                    continue;
+                }
                 p.postMessage(msg);
             }
         }

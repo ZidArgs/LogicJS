@@ -36,7 +36,9 @@ export default class Generator {
     loadEdges(config) {
         for (const name in config) {
             const node = config[name];
-            if (node == null) continue;
+            if (node == null) {
+                continue;
+            }
             this.loadNode(name, node);
         }
     }
@@ -44,7 +46,9 @@ export default class Generator {
     loadNode(name, config) {
         for (const tName in config) {
             const edge = config[tName];
-            if (edge == null) continue;
+            if (edge == null) {
+                continue;
+            }
             if (edge.logic == null) {
                 this.setEdge(name, tName, edge);
             } else {
@@ -66,7 +70,9 @@ export default class Generator {
     loadMixins(config) {
         for (const name in config) {
             const fn = config[name];
-            if (fn == null) continue;
+            if (fn == null) {
+                continue;
+            }
             if (fn.logic == null) {
                 this.setMixin(name, fn);
             } else {

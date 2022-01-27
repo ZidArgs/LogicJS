@@ -11,9 +11,7 @@ export default class TreeLogic extends EventTarget {
         MSG_RES.set(this, msgRes);
         MSG_CNT.set(this, 0);
         worker.addEventListener("message", (event) => {
-            const {
-                id, type = "", data = {}
-            } = event.data;
+            const {id, type = "", data = {}} = event.data;
             if (type == "traverse") {
                 const ev = new Event("logic");
                 ev.data = data;
@@ -58,9 +56,7 @@ export default class TreeLogic extends EventTarget {
     }
 
     async setDebug(value) {
-        await this.__post("debug", {
-            value
-        });
+        await this.__post("debug", {value});
     }
 
     async getDebug() {
@@ -72,9 +68,7 @@ export default class TreeLogic extends EventTarget {
     }
 
     async load(config) {
-        await this.__post("load", {
-            config
-        });
+        await this.__post("load", {config});
     }
     
     async setEdge(source, target, value) {
@@ -105,9 +99,7 @@ export default class TreeLogic extends EventTarget {
     }
     
     async setAllRedirects(redirects) {
-        await this.__post("setAllRedirects", {
-            redirects
-        });
+        await this.__post("setAllRedirects", {redirects});
     }
     
     async getRedirect(source, target) {
@@ -126,15 +118,11 @@ export default class TreeLogic extends EventTarget {
     }
     
     async addReachable(target) {
-        await this.__post("addReachable", {
-            target
-        });
+        await this.__post("addReachable", {target});
     }
     
     async deleteReachable(target) {
-        await this.__post("deleteReachable", {
-            target
-        });
+        await this.__post("deleteReachable", {target});
     }
     
     async clearReachables() {
@@ -156,15 +144,11 @@ export default class TreeLogic extends EventTarget {
     }
     
     async setAll(values) {
-        await this.__post("setAll", {
-            values
-        });
+        await this.__post("setAll", {values});
     }
     
     async get(ref) {
-        return await this.__get("get", {
-            ref
-        });
+        return await this.__get("get", {ref});
     }
     
     async getAll() {
@@ -172,9 +156,7 @@ export default class TreeLogic extends EventTarget {
     }
     
     async has(ref) {
-        return await this.__get("has", {
-            ref
-        });
+        return await this.__get("has", {ref});
     }
     
     async reset() {

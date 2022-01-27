@@ -43,7 +43,9 @@ export default class TraverseDataMap {
     }
 
     forEach(name, fn) {
-        if (typeof fn != "function") return;
+        if (typeof fn != "function") {
+            return;
+        }
         const reachables = REACHABLES.get(this);
         if (reachables.has(name)) {
             const reach = reachables.get(name);
