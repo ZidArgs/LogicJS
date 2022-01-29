@@ -243,7 +243,7 @@ async function loadLogic() {
 
     const generator = new Generator();
     generator.loadLogic(logic);
-    const generatedLogic = generator.run();
+    const generatedLogic = generator.generate();
 
     LogicProcessor.load(generatedLogic);
 }
@@ -261,9 +261,7 @@ async function runTest() {
     LogicProcessor.setAll(START_VALUES);
 
     console.time("TRAVERSE LOGIC");
-    LogicProcessor.traverse("region.root", {
-        foobar: "barfoo"
-    });
+    LogicProcessor.traverse("region.root", {foobar: "barfoo"});
     console.timeEnd("ACTIVATE TRAVERSE LOGIC");
 }
 
@@ -274,9 +272,7 @@ async function runTestDebug() {
 
     LogicProcessor.setAll(START_VALUES);
 
-    LogicProcessor.traverse("region.root", {
-        foobar: "barfoo"
-    });
+    LogicProcessor.traverse("region.root", {foobar: "barfoo"});
 
     LogicProcessor.setDebug(false);
 }

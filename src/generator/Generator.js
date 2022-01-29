@@ -86,7 +86,7 @@ export default class Generator {
         this.loadMixins(config.mixins);
     }
 
-    run() {
+    generate() {
         const edges = EDGES.get(this);
         const mixins = MIXINS.get(this);
         const res = {
