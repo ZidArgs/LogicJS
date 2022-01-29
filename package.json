@@ -15,13 +15,13 @@
     "@babel/core": "^7.16.10",
     "@babel/eslint-parser": "^7.16.5",
     "@babel/plugin-syntax-top-level-await": "^7.14.5",
-		"eslint": "^8.0.0"
+    "eslint": "^8.0.0"
   },
   "exports": "./src/",
   "scripts": {
-    "test": "serve . -p 12000",
-    "convert": "node _demo/converter.js",
     "lint": "yarn eslint ./src",
-    "lintfix": "yarn eslint --fix ./src"
+    "lintfix": "yarn eslint --fix ./src",
+    "test": "serve . -p 12000",
+    "convert": "node _demo/converter.js"
   }
 }
