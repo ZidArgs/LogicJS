@@ -19,8 +19,8 @@
   },
   "exports": "./src/",
   "scripts": {
-    "lint": "yarn eslint ./src",
-    "lintfix": "yarn eslint --fix ./src",
+    "lint": "yarn eslint .",
+    "lintfix": "yarn eslint --fix .",
     "test": "serve . -p 12000",
     "convert": "node _demo/converter.js"
   }
