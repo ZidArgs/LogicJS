@@ -36,5 +36,5 @@ export default class DataWrapper {
         const data = this.getAllData();
         return JSON.stringify(data, Object.keys(data).sort());
     }
-    
+
 }

@@ -70,7 +70,7 @@ export default class TreeLogic extends EventTarget {
     async load(config) {
         await this.__post("load", {config});
     }
-    
+
     async setEdge(source, target, value) {
         await this.__post("setEdge", {
             source,
@@ -78,18 +78,18 @@ export default class TreeLogic extends EventTarget {
             value
         });
     }
-    
+
     async setMixin(name, value) {
         await this.__post("setMixin", {
             name,
             value
         });
     }
-    
+
     async clearRedirects() {
         await this.__post("clearRedirects");
     }
-    
+
     async setRedirect(source, target, reroute) {
         await this.__post("setRedirect", {
             source,
@@ -97,74 +97,74 @@ export default class TreeLogic extends EventTarget {
             reroute
         });
     }
-    
+
     async setAllRedirects(redirects) {
         await this.__post("setAllRedirects", {redirects});
     }
-    
+
     async getRedirect(source, target) {
         return await this.__get("getRedirect", {
             source,
             target
         });
     }
-    
+
     async getEdges() {
         return await this.__get("getEdges");
     }
-    
+
     async getTargetNodes() {
         return await this.__get("getTargetNodes");
     }
-    
+
     async addReachable(target) {
         await this.__post("addReachable", {target});
     }
-    
+
     async deleteReachable(target) {
         await this.__post("deleteReachable", {target});
     }
-    
+
     async clearReachables() {
         await this.__post("clearReachables");
     }
-    
+
     async traverse(startNode, startData) {
         await this.__post("traverse", {
             startNode,
             startData
         });
     }
-    
+
     async set(key, value) {
         await this.__post("set", {
             key,
             value
         });
     }
-    
+
     async setAll(values) {
         await this.__post("setAll", {values});
     }
-    
+
     async get(ref) {
         return await this.__get("get", {ref});
     }
-    
+
     async getAll() {
         return await this.__get("getAll");
     }
-    
+
     async has(ref) {
         return await this.__get("has", {ref});
     }
-    
+
     async reset() {
         await this.__post("reset");
     }
-    
+
     async isDirty() {
         return await this.__get("isDirty");
     }
-    
+
 }

@@ -66,5 +66,5 @@ export default class Node {
     toString() {
         return this.getName();
     }
-    
+
 }
