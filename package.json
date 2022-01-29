@@ -1,6 +1,6 @@
 {
   "name": "treelogicjs",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Tree Logic Processor for JS Applications",
   "type": "module",
   "repository": {
