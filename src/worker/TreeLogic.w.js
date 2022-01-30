@@ -82,12 +82,12 @@ PortHandler.addEventListener("message", (event) => {
         case "clearReachables": {
             PROCESSOR.clearReachables();
         } break;
-        case "traverse": {
+        case "exec": {
             const {
                 startNode,
                 startData
             } = data;
-            const res = PROCESSOR.traverse(startNode, startData);
+            const res = PROCESSOR.exec(startNode, startData);
             PortHandler.sendAll({
                 type,
                 data: res

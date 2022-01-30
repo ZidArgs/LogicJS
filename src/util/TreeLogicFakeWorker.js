@@ -13,12 +13,12 @@ class TreeLogicFakeWorker extends EventTarget {
         return res;
     }
 
-    async clearGraph() {
-        PROCESSOR.clearGraph();
+    async clearLogic() {
+        PROCESSOR.clearLogic();
     }
 
-    async load(config) {
-        PROCESSOR.load(config);
+    async loadLogic(config) {
+        PROCESSOR.loadLogic(config);
     }
 
     async setEdge(source, target, value) {
@@ -68,8 +68,8 @@ class TreeLogicFakeWorker extends EventTarget {
         PROCESSOR.clearReachables();
     }
 
-    async traverse(startNode, startData) {
-        const res = PROCESSOR.traverse(startNode, startData);
+    async exec(startNode, startData) {
+        const res = PROCESSOR.exec(startNode, startData);
         const ev = new Event("logic");
         ev.data = res;
         this.dispatchEvent(ev);

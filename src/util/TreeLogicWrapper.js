@@ -12,7 +12,7 @@ export default class TreeLogic extends EventTarget {
         MSG_CNT.set(this, 0);
         worker.addEventListener("message", (event) => {
             const {id, type = "", data = {}} = event.data;
-            if (type == "traverse") {
+            if (type == "exec") {
                 const ev = new Event("logic");
                 ev.data = data;
                 this.dispatchEvent(ev);
@@ -63,12 +63,12 @@ export default class TreeLogic extends EventTarget {
         return await this.__get("debug");
     }
 
-    async clearGraph() {
-        await this.__post("clearGraph");
+    async clearLogic() {
+        await this.__post("clearLogic");
     }
 
-    async load(config) {
-        await this.__post("load", {config});
+    async loadLogic(config) {
+        await this.__post("loadLogic", {config});
     }
 
     async setEdge(source, target, value) {
@@ -129,8 +129,8 @@ export default class TreeLogic extends EventTarget {
         await this.__post("clearReachables");
     }
 
-    async traverse(startNode, startData) {
-        await this.__post("traverse", {
+    async exec(startNode, startData) {
+        await this.__post("exec", {
             startNode,
             startData
         });

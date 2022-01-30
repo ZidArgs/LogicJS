@@ -39,7 +39,6 @@ const TRANSPILERS = {
 
     /* mixins */
     "mixin":    (logic) => `exec(${escape(logic.el)}${functionParams(logic.params)})`,
-    "param":    (logic) => "0",
 
     /* special */
     "if":       (logic) => `(${buildLogic(logic.el)}?${escape(logic.then ?? 0)}:${escape(logic.else ?? 0)})`,

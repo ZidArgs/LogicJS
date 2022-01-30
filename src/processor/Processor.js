@@ -53,12 +53,26 @@ export default class Processor {
         return DEBUG.get(this);
     }
 
-    clearGraph() {
+    clearLogic() {
         const nodeFactory = NODES.get(this);
+        const mixins = MIXINS.get(this);
+        const mixinParams = MIXIN_PARAMS.get(this);
+        const mem_i = MEM_I.get(this);
+        const mem_o = MEM_O.get(this);
+        const redirectMatrix = REDIRECT_MATRIX.get(this);
+        const forcedReachable = FORCED_REACHABLE.get(this);
+        // ---
         nodeFactory.reset();
+        mixins.clear();
+        mixinParams.clear();
+        mem_i.clear();
+        mem_o.clear();
+        redirectMatrix.clear();
+        forcedReachable.clear();
+        DIRTY.set(this, false);
     }
 
-    load(config) {
+    loadLogic(config) {
         const debug = DEBUG.get(this);
         const nodeFactory = NODES.get(this);
         const mixins = MIXINS.get(this);
@@ -248,7 +262,7 @@ export default class Processor {
     }
 
     /* broad search */
-    traverse(startNode, startData = {}) {
+    exec(startNode, startData = {}) {
         const nodeFactory = NODES.get(this);
         const allTargets = this.getTargetNodes();
         let reachableCount = 0;
@@ -283,21 +297,21 @@ export default class Processor {
             }
 
             const getValue = key => {
-                if (allTargets.has(key) && traversedDataMap.has(key)) {
-                    return 1;
+                if (allTargets.has(key)) {
+                    return +traversedDataMap.has(key);
                 } else if (mem_i.has(key)) {
                     return mem_i.get(key);
                 }
                 return 0;
             };
 
-            const getData = wrapper => {
+            const getData = dataWrapper => {
                 return name => {
-                    return wrapper.getData(name);
+                    return dataWrapper.getData(name);
                 };
             };
 
-            const execute = wrapper => {
+            const execute = dataWrapper => {
                 return (name, ...params) => {
                     if (mixins.has(name)) {
                         const fn = mixins.get(name);
@@ -316,7 +330,7 @@ export default class Processor {
                             console.log("call parameters: ", params);
                         }
 
-                        const res = fn(getValue, getData(wrapper), execute(wrapper), params);
+                        const res = fn(getValue, getData(dataWrapper), execute(dataWrapper), params);
 
                         if (debug == "extended") {
                             console.log(`result: ${res}`);
@@ -364,7 +378,7 @@ export default class Processor {
                         console.groupCollapsed(`traverse edge { ${edge} }`);
                         console.log(condition.toString());
                     }
-                    const cRes = condition(getValue, getData(dataWrapper), execute(dataWrapper));
+                    const cRes = condition(getValue(dataWrapper), getData(dataWrapper), execute(dataWrapper));
                     if (cRes) {
                         if (debug == "extended") {
                             console.log(`result: ${cRes}`);

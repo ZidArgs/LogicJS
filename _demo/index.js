@@ -245,7 +245,7 @@ async function loadLogic() {
     generator.loadLogic(logic);
     const generatedLogic = generator.generate();
 
-    LogicProcessor.load(generatedLogic);
+    LogicProcessor.loadLogic(generatedLogic);
 }
 
 LogicProcessor.addEventListener("logic", printResult);
