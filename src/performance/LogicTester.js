@@ -122,6 +122,20 @@ export default class LogicTester {
         return res;
     }
 
+    getTargetNodes() {
+        const nodeFactory = NODES.get(this);
+        const nodes = nodeFactory.getNames();
+        const res = new Set();
+        for (const name of nodes) {
+            const node = nodeFactory.get(name);
+            const children = node.getTargets();
+            for (const ch of children) {
+                res.add(ch);
+            }
+        }
+        return res;
+    }
+
     testLogic(startData = {}) {
         return {
             edges: this.executeEdges(startData),

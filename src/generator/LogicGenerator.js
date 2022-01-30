@@ -4,7 +4,7 @@ import LogicNode from "./components/LogicNode.js";
 const EDGES = new WeakMap();
 const MIXINS = new WeakMap();
 
-export default class Generator {
+export default class LogicGenerator {
 
     constructor() {
         EDGES.set(this, new Map());

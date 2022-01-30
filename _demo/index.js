@@ -1,5 +1,5 @@
 import FileLoader from "./util/FileLoader.js";
-import Generator from "../src/generator/Generator.js";
+import LogicGenerator from "../src/generator/LogicGenerator.js";
 import LogicProcessor from "../src/LogicProcessor.js";
 
 const WANT_OUTPUT_LOG = [
@@ -241,7 +241,7 @@ async function printResult(event) {
 async function loadLogic() {
     const logic = await FileLoader.json(`logic.json`);
 
-    const generator = new Generator();
+    const generator = new LogicGenerator();
     generator.loadLogic(logic);
     const generatedLogic = generator.generate();
 
