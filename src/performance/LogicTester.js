@@ -138,13 +138,13 @@ export default class LogicTester {
 
     testLogic(startData = {}) {
         return {
-            edges: this.executeEdges(startData),
-            mixins: this.executeMixins(startData)
+            edges: this.#executeEdges(startData),
+            mixins: this.#executeMixins(startData)
         };
     }
 
     /* all edges */
-    executeEdges(startData) {
+    #executeEdges(startData) {
         const allTargets = this.getTargetNodes();
         const traversedDataMap = new TraverseDataMap();
         const mixins = MIXINS.get(this);
@@ -214,7 +214,7 @@ export default class LogicTester {
     }
 
     /* all mixins */
-    executeMixins(startData) {
+    #executeMixins(startData) {
         const mixins = MIXINS.get(this);
         const mixinParams = MIXIN_PARAMS.get(this);
         const allTargets = this.getTargetNodes();

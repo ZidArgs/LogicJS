@@ -173,34 +173,45 @@ function logicReducer(input) {
     }
 }
 
-export function reduceLogic(config) {
-    const res = {
-        edges: {},
-        mixins: {}
+export default class LogicReducer {
+
+    reduceLogic(config) {
+        return {
+            edges: this.#reduceEdges(config.edges),
+            mixins: this.#reduceMixins(config.mixins)
+        };
     }
 
-    for (const s in config.edges) {
-        res.edges[s] = res.edges[s] ?? {};
-        const targets = config.edges[s];
-        for (const t in targets) {
-            const edge = targets[t];
-            const logic = edge.logic;
-            const data = edge.data;
-            res.edges[s][t] = {
+    #reduceEdges(edges) {
+        const res = {};
+        for (const s in edges) {
+            res[s] = res[s] ?? {};
+            const targets = edges[s];
+            for (const t in targets) {
+                const edge = targets[t];
+                const logic = edge.logic;
+                const data = edge.data;
+                res[s][t] = {
+                    logic: logicReducer(logic) ?? {type: "false"},
+                    data: logicReducer(data) ?? undefined
+                };
+            }
+        }
+        return res;
+    }
+
+    #reduceMixins(mixins) {
+        const res = {};
+        for (const n in mixins) {
+            const mixin = mixins[name];
+            const logic = mixin.logic;
+            const params = mixin.params;
+            res.mixins[n] = {
                 logic: logicReducer(logic) ?? {type: "false"},
-                data: logicReducer(data) ?? undefined
-            };
+                params
+            }
         }
-    }
-    for (const n in config.mixins) {
-        const mixin = config.mixins[name];
-        const logic = mixin.logic;
-        const params = mixin.params;
-        res.mixins[n] = {
-            logic: logicReducer(logic) ?? {type: "false"},
-            params
-        }
+        return res;
     }
 
-    return res;
 }
