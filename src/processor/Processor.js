@@ -353,7 +353,6 @@ export default class Processor {
                 return res;
             };
 
-
             /* start traversion */
             const queue = [];
             for (const ch of start.getTargets()) {

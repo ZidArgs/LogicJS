@@ -1,6 +1,4 @@
 
-
-
 import NodeFactory from "../processor/NodeFactory.js";
 import EdgeCompiler from "../processor/compiler/EdgeCompiler.js";
 import MixinCompiler from "../processor/compiler/MixinCompiler.js";
