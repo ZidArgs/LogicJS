@@ -173,7 +173,7 @@ function logicReducer(input) {
     }
 }
 
-export default class LogicReducer {
+class LogicReducer {
 
     reduceLogic(config) {
         return {
@@ -215,3 +215,5 @@ export default class LogicReducer {
     }
 
 }
+
+export default new LogicReducer();

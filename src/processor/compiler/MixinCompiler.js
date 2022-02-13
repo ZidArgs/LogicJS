@@ -7,6 +7,8 @@ const TRANSPILERS = {
     "value":    (logic) => `(val(${escape(logic.el)})||0)`,
     "pointer":  (logic) => `(val(val(${escape(logic.el)})||"")||0)`,
     "state":    (logic) => `(val(${escape(logic.el)})||"")==${escape(logic.value)}`,
+    "param":    (logic) => `params[${toNumber(logic.el)}]`,
+    "data":     (logic) => `data(${escapeString(logic.el)})`,
 
     /* operators */
     "and":      (logic) => `${multiElementOperation(logic.el, "&&")}`,
@@ -37,14 +39,12 @@ const TRANSPILERS = {
     "mod":      (logic) => mathMultiElementOperation(logic.el, "%"),
     "pow":      (logic) => mathTwoElementOperation(logic.el, "**"),
 
-    /* mixins */
+    /* logic */
     "mixin":    (logic) => `exec(${escape(logic.el)}${functionParams(logic.params)})`,
-    "param":    (logic) => `params[${toNumber(logic.el)}]`,
-
-    /* special */
     "if":       (logic) => `(${buildLogic(logic.el)}?${escape(logic.then ?? 0)}:${escape(logic.else ?? 0)})`,
-    "at":       (logic) => logic.el ? `((val(${escape(logic.node)})||0)&&${buildLogic(logic.el)})` : `(val(${escape(logic.node)})||0)`,
-    "data":     (logic) => `data(${escapeString(logic.el)})`
+
+    /* referrer */
+    "at":       (logic) => logic.el ? `((val(${escape(logic.node)})||0)&&${buildLogic(logic.el)})` : `(val(${escape(logic.node)})||0)`
 };
 
 const dependencies = new Set();
