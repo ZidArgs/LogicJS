@@ -41,7 +41,6 @@ const TRANSPILERS = {
 
     /* logic */
     "mixin":    (logic) => `exec(${escape(logic.el)}${functionParams(logic.params)})`,
-    "if":       (logic) => `(${buildLogic(logic.el)}?${escape(logic.then ?? 0)}:${escape(logic.else ?? 0)})`,
 
     /* referrer */
     "at":       (logic) => logic.el ? `((val(${escape(logic.node)})||0)&&${buildLogic(logic.el)})` : `(val(${escape(logic.node)})||0)`

@@ -1,3 +1,4 @@
+import AbstractLiteral from "./elements/abstract/AbstractLiteral.js";
 /* literal */
 import LiteralFalse from "./elements/literal/LiteralFalse.js";
 import LiteralTrue from "./elements/literal/LiteralTrue.js";
@@ -35,9 +36,26 @@ import MathMod from "./elements/math/MathMod.js";
 import MathPow from "./elements/math/MathPow.js";
 /* logic */
 import LogicMixin from "./elements/logic/LogicMixin.js";
-import LogicIf from "./elements/logic/LogicIf.js";
 /* referrer */
 import ReferrerAt from "./elements/referrer/ReferrerAt.js";
+
+class UnknownElement extends AbstractLiteral {
+
+    #ref;
+
+    constructor(ref) {
+        super();
+        this.#ref = ref;
+    }
+
+    toJSON()  {
+        return {
+            type: "unknown",
+            el: this.#ref
+        };
+    }
+
+}
 
 export default {
     /* literal */
@@ -77,7 +95,8 @@ export default {
     "pow":      (...params) => new MathPow(...params),
     /* logic */
     "mixin":    (...params) => new LogicMixin(...params),
-    "if":       (...params) => new LogicIf(...params),
     /* referrer */
-    "at":       (...params) => new ReferrerAt(...params)
+    "at":       (...params) => new ReferrerAt(...params),
+    /* unknown */
+    "unknown":  (...params) => new UnknownElement(...params)
 };
