@@ -3,11 +3,11 @@ const TRANSPILERS = {
     "true":     (logic) => "1",
     "false":    (logic) => "0",
     "string":   (logic) => `${escapeString(logic.el)}`,
-    "number":   (logic) => toNumber(logic.el),
-    "value":    (logic) => `(val(${escape(logic.el)})||0)`,
-    "pointer":  (logic) => `(val(val(${escape(logic.el)})||"")||0)`,
-    "state":    (logic) => `(val(${escape(logic.el)})||"")==${escape(logic.value)}`,
-    "data":     (logic) => `data(${escapeString(logic.el)})`,
+    "number":   (logic) => `${escapeNumber(logic.el)}`,
+    "value":    (logic) => `(val(${escapeString(logic.el)})||0)`,
+    "pointer":  (logic) => `(val(val(${escapeString(logic.el)})||"")||0)`,
+    "state":    (logic) => `(val(${escapeString(logic.el)})||"")==${escapeValue(logic.value)}`,
+    "data":     (logic) => `(data(${escapeString(logic.el)})??0)`,
 
     /* operators */
     "and":      (logic) => `${multiElementOperation(logic.el, "&&")}`,
@@ -39,10 +39,10 @@ const TRANSPILERS = {
     "pow":      (logic) => mathTwoElementOperation(logic.el, "**"),
 
     /* logic */
-    "mixin":    (logic) => `exec(${escape(logic.el)}${functionParams(logic.params)})`,
+    "mixin":    (logic) => `exec(${escapeString(logic.el)}${functionParams(logic.params)})`,
 
     /* referrer */
-    "at":       (logic) => logic.el ? `((val(${escape(logic.node)})||0)&&${buildLogic(logic.el)})` : `(val(${escape(logic.node)})||0)`
+    "at":       (logic) => logic.el ? `((val(${escapeString(logic.node)})||0)&&${buildLogic(logic.el)})` : `(val(${escapeString(logic.node)})||0)`
 };
 
 const dependencies = new Set();
@@ -59,8 +59,8 @@ function escapeString(str) {
     return `"${res}"`;
 }
 
-/* ELEMENTS */
-function escape(str) {
+/* VALUE */
+function escapeValue(str) {
     if (typeof str != "string") {
         if (typeof str == "number") {
             if (isNaN(str)) {
@@ -68,13 +68,14 @@ function escape(str) {
             }
             return str;
         }
-        return buildLogic(str);
+        return 0;
     }
     const res = str.replace(/[\\"]/g, "\\$&");
     dependencies.add(res);
     return `"${res}"`;
 }
 
+/* ELEMENTS */
 function twoElementOperation(els, join) {
     return mathMultiElementOperation(els.slice(0, 2), join);
 }
