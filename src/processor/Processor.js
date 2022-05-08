@@ -514,11 +514,21 @@ export default class Processor {
     reset() {
         const debug = DEBUG.get(this);
         if (debug) {
-            console.log("GRAPH LOGIC MEMORY RESET");
+            console.log("GRAPH LOGIC FULL MEMORY RESET");
         }
         const mem_i = MEM_I.get(this);
         const mem_o = MEM_O.get(this);
         mem_i.clear();
+        mem_o.clear();
+        DIRTY.set(this, true);
+    }
+
+    resetOutput() {
+        const debug = DEBUG.get(this);
+        if (debug) {
+            console.log("GRAPH LOGIC OUTPUT MEMORY RESET");
+        }
+        const mem_o = MEM_O.get(this);
         mem_o.clear();
         DIRTY.set(this, true);
     }
