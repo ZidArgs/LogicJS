@@ -25,7 +25,7 @@ export default class TreeLogic extends EventTarget {
         });
     }
 
-    /*#*/__get(type, data) {
+    #get(type, data) {
         return new Promise((resolve) => {
             const msg = {
                 action: "get",
@@ -42,7 +42,7 @@ export default class TreeLogic extends EventTarget {
         });
     }
 
-    /*#*/__post(type, data) {
+    #post(type, data) {
         return new Promise((resolve) => {
             const msg = {
                 action: "post",
@@ -56,23 +56,23 @@ export default class TreeLogic extends EventTarget {
     }
 
     async setDebug(value) {
-        await this.__post("debug", {value});
+        await this.#post("debug", {value});
     }
 
     async getDebug() {
-        return await this.__get("debug");
+        return await this.#get("debug");
     }
 
     async clearLogic() {
-        await this.__post("clearLogic");
+        await this.#post("clearLogic");
     }
 
     async loadLogic(config) {
-        await this.__post("loadLogic", {config});
+        await this.#post("loadLogic", {config});
     }
 
     async setEdge(source, target, value) {
-        await this.__post("setEdge", {
+        await this.#post("setEdge", {
             source,
             target,
             value
@@ -80,18 +80,18 @@ export default class TreeLogic extends EventTarget {
     }
 
     async setMixin(name, value) {
-        await this.__post("setMixin", {
+        await this.#post("setMixin", {
             name,
             value
         });
     }
 
     async clearRedirects() {
-        await this.__post("clearRedirects");
+        await this.#post("clearRedirects");
     }
 
     async setRedirect(source, target, reroute) {
-        await this.__post("setRedirect", {
+        await this.#post("setRedirect", {
             source,
             target,
             reroute
@@ -99,72 +99,72 @@ export default class TreeLogic extends EventTarget {
     }
 
     async setAllRedirects(redirects) {
-        await this.__post("setAllRedirects", {redirects});
+        await this.#post("setAllRedirects", {redirects});
     }
 
     async getRedirect(source, target) {
-        return await this.__get("getRedirect", {
+        return await this.#get("getRedirect", {
             source,
             target
         });
     }
 
     async getEdges() {
-        return await this.__get("getEdges");
+        return await this.#get("getEdges");
     }
 
     async getTargetNodes() {
-        return await this.__get("getTargetNodes");
+        return await this.#get("getTargetNodes");
     }
 
     async addReachable(target) {
-        await this.__post("addReachable", {target});
+        await this.#post("addReachable", {target});
     }
 
     async deleteReachable(target) {
-        await this.__post("deleteReachable", {target});
+        await this.#post("deleteReachable", {target});
     }
 
     async clearReachables() {
-        await this.__post("clearReachables");
+        await this.#post("clearReachables");
     }
 
     async exec(startNode, startData) {
-        await this.__post("exec", {
+        await this.#post("exec", {
             startNode,
             startData
         });
     }
 
     async set(key, value) {
-        await this.__post("set", {
+        await this.#post("set", {
             key,
             value
         });
     }
 
     async setAll(values) {
-        await this.__post("setAll", {values});
+        await this.#post("setAll", {values});
     }
 
     async get(ref) {
-        return await this.__get("get", {ref});
+        return await this.#get("get", {ref});
     }
 
     async getAll() {
-        return await this.__get("getAll");
+        return await this.#get("getAll");
     }
 
     async has(ref) {
-        return await this.__get("has", {ref});
+        return await this.#get("has", {ref});
     }
 
     async reset() {
-        await this.__post("reset");
+        await this.#post("reset");
     }
 
     async isDirty() {
-        return await this.__get("isDirty");
+        return await this.#get("isDirty");
     }
 
 }
