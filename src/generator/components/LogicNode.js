@@ -5,7 +5,7 @@ const NAME = new WeakMap();
 
 export default class LogicNode {
 
-    constructor(name, data) {
+    constructor(name) {
         EDGES.set(this, new Map());
         NAME.set(this, name);
     }

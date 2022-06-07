@@ -153,7 +153,7 @@ export default class LogicTester {
         const failed = new Set();
         const dataWrapper = new DataWrapper(null, startData);
 
-        const getValue =  key => {
+        const getValue =  (key) => {
             if (allTargets.has(key)) {
                 return +traversedDataMap.has(key);
             } else if (mem_i.has(key)) {
@@ -162,13 +162,13 @@ export default class LogicTester {
             return 0;
         };
 
-        const getData = wrapper => {
-            return name => {
+        const getData = (wrapper) => {
+            return (name) => {
                 return wrapper.getData(name);
             };
         };
 
-        const execute = dataWrapper => {
+        const execute = (dataWrapper) => {
             return (name, ...params) => {
                 if (mixins.has(name)) {
                     const fn = mixins.get(name);
@@ -222,7 +222,7 @@ export default class LogicTester {
 
         const dataWrapper = new DataWrapper(null, startData);
 
-        const getValue =  key => {
+        const getValue =  (key) => {
             if (allTargets.has(key)) {
                 return 1;
             } else if (mem_i.has(key)) {
@@ -231,13 +231,13 @@ export default class LogicTester {
             return 0;
         };
 
-        const getData = wrapper => {
-            return name => {
+        const getData = (wrapper) => {
+            return (name) => {
                 return wrapper.getData(name);
             };
         };
 
-        const execute = dataWrapper => {
+        const execute = (dataWrapper) => {
             return (name, ...params) => {
                 if (mixins.has(name)) {
                     const fn = mixins.get(name);

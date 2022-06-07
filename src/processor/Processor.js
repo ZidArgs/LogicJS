@@ -14,7 +14,7 @@ function mapToObj(src) {
 
 function setToArray(src) {
     const res = [];
-    src.forEach(v => {
+    src.forEach((v) => {
         res.push(v);
     });
     return res;
@@ -296,7 +296,7 @@ export default class Processor {
                 traversedDataMap.add(name);
             }
 
-            const getValue = key => {
+            const getValue = (key) => {
                 if (allTargets.has(key)) {
                     return +traversedDataMap.has(key);
                 } else if (mem_i.has(key)) {
@@ -305,13 +305,13 @@ export default class Processor {
                 return 0;
             };
 
-            const getData = dataWrapper => {
-                return name => {
+            const getData = (dataWrapper) => {
+                return (name) => {
                     return dataWrapper.getData(name);
                 };
             };
 
-            const execute = dataWrapper => {
+            const execute = (dataWrapper) => {
                 return (name, ...params) => {
                     if (mixins.has(name)) {
                         const fn = mixins.get(name);

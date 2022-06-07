@@ -28,7 +28,7 @@ function getAbsolutePath(path) {
 async function importModule(url) {
     const modulePath = getAbsolutePath(url);
     return import(modulePath)
-        .then(res => {
+        .then((res) => {
             try {
                 const {default: def, ...other} = res ?? {};
                 return [def, other];
@@ -36,7 +36,7 @@ async function importModule(url) {
                 throw new Error(`Error extracting module\n${err}`)
             }
         })
-        .catch(err => {
+        .catch((err) => {
             throw new Error(`Error appending module "${url}" ${err}`)
         });
 }
