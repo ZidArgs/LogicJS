@@ -4,22 +4,6 @@ import MixinCompiler from "./compiler/MixinCompiler.js";
 import DataWrapper from "./components/DataWrapper.js";
 import TraverseDataMap from "./components/TraverseDataMap.js";
 
-function mapToObj(src) {
-    const res = {};
-    src.forEach((v, k) => {
-        res[k] = v;
-    });
-    return res;
-}
-
-function setToArray(src) {
-    const res = [];
-    src.forEach((v) => {
-        res.push(v);
-    });
-    return res;
-}
-
 const DIRTY = new WeakMap();
 const MIXINS = new WeakMap();
 const MIXIN_PARAMS = new WeakMap();
@@ -282,9 +266,9 @@ export default class Processor {
             if (debug) {
                 const redirectMatrix = REDIRECT_MATRIX.get(this);
                 console.groupCollapsed("GRAPH LOGIC EXECUTION");
-                console.log("input", mapToObj(mem_i));
-                console.log("redirects", mapToObj(redirectMatrix));
-                console.log("forced", setToArray(forcedReachable));
+                console.log("input", Object.fromEntries(mem_i));
+                console.log("redirects", Object.fromEntries(redirectMatrix));
+                console.log("forced", Array.from(forcedReachable));
                 console.log("traverse nodes...");
                 console.time("execution time");
                 if (debug == "extended") {
@@ -438,7 +422,7 @@ export default class Processor {
                 console.log("success");
                 console.timeEnd("execution time");
                 console.log("reachable", traversedDataMap.getAll());
-                console.log("output", mapToObj(mem_o));
+                console.log("output", Object.fromEntries(mem_o));
                 console.log("changes", changes);
                 console.groupEnd("GRAPH LOGIC EXECUTION");
             }
@@ -497,9 +481,9 @@ export default class Processor {
     getAll() {
         const mem_o = MEM_O.get(this);
         const obj = {};
-        mem_o.forEach((v, k) => {
-            obj[k] = v
-        });
+        for (const [k, v] of mem_o) {
+            obj[k] = v;
+        }
         return obj;
     }
 
