@@ -1,15 +1,15 @@
 {
-  "name": "treelogicjs",
+  "name": "logicjs",
   "version": "0.1.7",
   "description": "Tree Logic Processor for JS Applications",
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@bitbucket.org/zidargs/treelogicjs.git"
+    "url": "git+ssh://git@bitbucket.org/zidargs/logicjs.git"
   },
   "author": "Denis Peters (ZidArgs)",
   "license": "MIT",
-  "homepage": "https://bitbucket.org/zidargs/treelogicjs/src",
+  "homepage": "https://bitbucket.org/zidargs/logicjs/src",
   "dependencies": {},
   "devDependencies": {
     "@babel/core": "^7.16.10",
