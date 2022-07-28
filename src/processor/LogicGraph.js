@@ -1,4 +1,4 @@
-import NodeFactory from "./NodeFactory.js";
+import NodeFactory from "./components/NodeFactory.js";
 import EdgeCompiler from "./compiler/EdgeCompiler.js";
 import MixinCompiler from "./compiler/MixinCompiler.js";
 import DataWrapper from "./components/DataWrapper.js";
@@ -15,7 +15,7 @@ const NODES = new WeakMap();
 const REDIRECT_MATRIX = new WeakMap();
 const FORCED_REACHABLE = new WeakMap();
 
-export default class Processor {
+export default class LogicGraph {
 
     constructor(debug = false) {
         NODES.set(this, new NodeFactory());

@@ -1,4 +1,4 @@
-import Node from "./components/Node.js";
+import Node from "./Node.js";
 
 const NODES = new WeakMap();
 

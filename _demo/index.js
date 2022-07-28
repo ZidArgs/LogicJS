@@ -1,6 +1,8 @@
 import FileLoader from "./util/FileLoader.js";
 import LogicGenerator from "../src/generator/LogicGenerator.js";
-import LogicProcessor from "../src/LogicProcessor.js";
+import LogicGraph from "../src/processor/LogicGraph.js";
+
+const logicGraph = new LogicGraph();
 
 const WANT_OUTPUT_LOG = [
     "logic.location.lake.c_fishing_adult",
@@ -226,11 +228,11 @@ const START_VALUES = {
     "item.hookshot": 1
 };
 
-async function printResult(event) {
+async function printResult(data) {
     console.time("PRINT TRAVERSE LOGIC");
-    console.log("event data", event.data);
+    console.log("data", data);
     console.timeEnd("PRINT TRAVERSE LOGIC");
-    const res = await LogicProcessor.getAll();
+    const res = await logicGraph.getAll();
     console.log("all data", res);
     for (const key of WANT_OUTPUT_LOG) {
         console.log(key, res[key]);
@@ -245,10 +247,8 @@ async function loadLogic() {
     generator.loadLogic(logic);
     const generatedLogic = generator.generate();
 
-    LogicProcessor.loadLogic(generatedLogic);
+    logicGraph.loadLogic(generatedLogic);
 }
-
-LogicProcessor.addEventListener("logic", printResult);
 
 // ---------------------------------
 
@@ -258,23 +258,27 @@ async function runTest() {
     console.timeEnd("INIT LOGIC");
 
     console.time("ACTIVATE TRAVERSE LOGIC");
-    LogicProcessor.setAll(START_VALUES);
+    logicGraph.setAll(START_VALUES);
 
     console.time("TRAVERSE LOGIC");
-    LogicProcessor.traverse("region.root", {foobar: "barfoo"});
+    const result = logicGraph.exec("region.root", {foobar: "barfoo"});
     console.timeEnd("ACTIVATE TRAVERSE LOGIC");
+
+    printResult(result);
 }
 
 async function runTestDebug() {
-    LogicProcessor.setDebug("extended");
+    logicGraph.setDebug("extended");
 
     await loadLogic();
 
-    LogicProcessor.setAll(START_VALUES);
+    logicGraph.setAll(START_VALUES);
 
-    LogicProcessor.traverse("region.root", {foobar: "barfoo"});
+    const result = logicGraph.exec("region.root", {foobar: "barfoo"});
 
-    LogicProcessor.setDebug(false);
+    logicGraph.setDebug(false);
+
+    printResult(result);
 }
 
 document.getElementById("runlogic").onclick = runTest;
