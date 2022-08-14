@@ -165,6 +165,9 @@ function logicReducer(input) {
             if (output.el.type == "true") {
                 return {type: "false"}
             }
+            if (output.el.type == "not") {
+                return output.el.el
+            }
             return output;
         }
         default: {
@@ -191,10 +194,14 @@ class LogicReducer {
                 const edge = targets[t];
                 const logic = edge.logic;
                 const data = edge.data;
-                res[s][t] = {
-                    logic: logicReducer(logic) ?? {type: "false"},
-                    data: logicReducer(data) ?? undefined
-                };
+                try {
+                    res[s][t] = {
+                        logic: logicReducer(logic) ?? {type: "false"},
+                        data: logicReducer(data) ?? undefined
+                    };
+                } catch (err) {
+                    console.error(`Error in edge "${s}" -> "${t}"`, err);
+                }
             }
         }
         return res;
@@ -206,9 +213,13 @@ class LogicReducer {
             const mixin = mixins[name];
             const logic = mixin.logic;
             const params = mixin.params;
-            res.mixins[n] = {
-                logic: logicReducer(logic) ?? {type: "false"},
-                params
+            try {
+                res.mixins[n] = {
+                    logic: logicReducer(logic) ?? {type: "false"},
+                    params
+                };
+            } catch (err) {
+                console.error(`Error in mixin "${n}"`, err);
             }
         }
         return res;
