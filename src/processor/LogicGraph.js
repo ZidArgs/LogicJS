@@ -15,6 +15,8 @@ const NODES = new WeakMap();
 const REDIRECT_MATRIX = new WeakMap();
 const FORCED_REACHABLE = new WeakMap();
 
+const ENTRANCE_PATTERN = /^([^ ]+) -> ([^ ]+)$/;
+
 export default class LogicGraph {
 
     constructor(debug = false) {
@@ -291,6 +293,11 @@ export default class LogicGraph {
 
             const getData = (dataWrapper) => {
                 return (name) => {
+                    const patternResult = ENTRANCE_PATTERN.exec(name);
+                    if (patternResult != null) {
+                        const [, sourceName, targetName] = patternResult;
+                        return this.getRedirect(sourceName, targetName);
+                    }
                     return dataWrapper.getData(name);
                 };
             };

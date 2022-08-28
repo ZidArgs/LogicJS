@@ -1,6 +1,6 @@
 {
   "name": "logicjs",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Tree Logic Processor for JS Applications",
   "type": "module",
   "repository": {
