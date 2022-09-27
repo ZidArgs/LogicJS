@@ -20,6 +20,7 @@ const TRANSPILERS = {
     /* restrictors */
     "min":      (logic) => `(${buildLogic(logic.el)}>=${escapeNumber(logic.value)})`,
     "max":      (logic) => `(${buildLogic(logic.el)}<=${escapeNumber(logic.value)})`,
+    "regexp":   (logic) => `(/${logic.value}/.test(${buildLogic(logic.el)}))`,
 
     /* comparators */
     "eq":       (logic) => twoElementOperation(logic.el, "=="),
