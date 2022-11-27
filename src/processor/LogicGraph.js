@@ -4,23 +4,25 @@ import MixinCompiler from "./compiler/MixinCompiler.js";
 import DataWrapper from "./components/DataWrapper.js";
 import TraverseDataMap from "./components/TraverseDataMap.js";
 
+// TODO debug as parameter map so more granular debugging can be enabled
+
 const DIRTY = new WeakMap();
 const MIXINS = new WeakMap();
 const MIXIN_PARAMS = new WeakMap();
 const MEM_I = new WeakMap();
 const MEM_O = new WeakMap();
 const DEBUG = new WeakMap();
-const NODES = new WeakMap();
 
 const REDIRECT_MATRIX = new WeakMap();
 const FORCED_REACHABLE = new WeakMap();
 
-const ENTRANCE_PATTERN = /^([^ ]+) -> ([^ ]+)$/;
+const EDGE_PATTERN = /^([^ ]+) -> ([^ ]+)$/;
 
 export default class LogicGraph {
 
+    #nodeFactory = new NodeFactory();
+
     constructor(debug = false) {
-        NODES.set(this, new NodeFactory());
         MIXINS.set(this, new Map());
         MIXIN_PARAMS.set(this, new Map());
         MEM_I.set(this, new Map());
@@ -40,7 +42,6 @@ export default class LogicGraph {
     }
 
     clearLogic() {
-        const nodeFactory = NODES.get(this);
         const mixins = MIXINS.get(this);
         const mixinParams = MIXIN_PARAMS.get(this);
         const mem_i = MEM_I.get(this);
@@ -48,7 +49,7 @@ export default class LogicGraph {
         const redirectMatrix = REDIRECT_MATRIX.get(this);
         const forcedReachable = FORCED_REACHABLE.get(this);
         // ---
-        nodeFactory.reset();
+        this.#nodeFactory.reset();
         mixins.clear();
         mixinParams.clear();
         mem_i.clear();
@@ -60,7 +61,6 @@ export default class LogicGraph {
 
     loadLogic(config) {
         const debug = DEBUG.get(this);
-        const nodeFactory = NODES.get(this);
         const mixins = MIXINS.get(this);
         const mixinParams = MIXIN_PARAMS.get(this);
         const mem_o = MEM_O.get(this);
@@ -70,7 +70,7 @@ export default class LogicGraph {
         }
         for (const name in config.edges) {
             const children = config.edges[name];
-            const node = nodeFactory.get(name);
+            const node = this.#nodeFactory.get(name);
             for (const child in children) {
                 const edge = children[child];
                 const logic = edge.logic;
@@ -80,7 +80,7 @@ export default class LogicGraph {
                     dataFns[key] = EdgeCompiler.compile(data[key]);
                 }
                 const fn = EdgeCompiler.compile(logic);
-                node.append(nodeFactory.get(child), fn, dataFns);
+                node.append(this.#nodeFactory.get(child), fn, dataFns);
                 if (!mem_o.has(child)) {
                     mem_o.set(child, false);
                 }
@@ -103,13 +103,12 @@ export default class LogicGraph {
 
     setEdge(source, target, value, data) {
         const debug = DEBUG.get(this);
-        const nodeFactory = NODES.get(this);
         if (debug) {
             console.groupCollapsed("GRAPH LOGIC BUILD");
             console.time("build time");
         }
-        const node = nodeFactory.get(source);
-        const child = nodeFactory.get(target);
+        const node = this.#nodeFactory.get(source);
+        const child = this.#nodeFactory.get(target);
         if (typeof value == "undefined" || value == null) {
             node.remove(child);
             DIRTY.set(this, true);
@@ -129,19 +128,22 @@ export default class LogicGraph {
         }
     }
 
-    setMixin(name, value) {
+    setMixin(name, value, params = []) {
         const debug = DEBUG.get(this);
         const mixins = MIXINS.get(this);
+        const mixinParams = MIXIN_PARAMS.get(this);
         if (debug) {
             console.groupCollapsed("GRAPH LOGIC BUILD");
             console.time("build time");
         }
-        if (typeof value == "undefined" || value == null) {
+        if (value == null) {
             mixins.delete(name);
+            mixinParams.delete(name);
             DIRTY.set(this, true);
         } else {
             const fn = MixinCompiler.compile(value);
             mixins.set(name, fn);
+            mixinParams.set(name, params);
             DIRTY.set(this, true);
         }
         if (debug) {
@@ -149,6 +151,15 @@ export default class LogicGraph {
             console.groupEnd("GRAPH LOGIC BUILD");
         }
         DIRTY.set(this, true);
+    }
+
+    getMixin(name) {
+        const mixins = MIXINS.get(this);
+        const mixinParams = MIXIN_PARAMS.get(this);
+        return {
+            fn: mixins.get(name),
+            params: mixinParams.get(name)
+        };
     }
 
     clearRedirects() {
@@ -204,12 +215,15 @@ export default class LogicGraph {
         return target;
     }
 
+    getNode(name) {
+        return this.#nodeFactory.get(name);
+    }
+
     getEdges() {
-        const nodeFactory = NODES.get(this);
-        const nodes = nodeFactory.getNames();
+        const nodes = this.#nodeFactory.getNames();
         const res = [];
         for (const name of nodes) {
-            const node = nodeFactory.get(name);
+            const node = this.#nodeFactory.get(name);
             const children = node.getTargets();
             for (const ch of children) {
                 res.push([name, ch]);
@@ -219,11 +233,10 @@ export default class LogicGraph {
     }
 
     getTargetNodes() {
-        const nodeFactory = NODES.get(this);
-        const nodes = nodeFactory.getNames();
+        const nodes = this.#nodeFactory.getNames();
         const res = new Set();
         for (const name of nodes) {
-            const node = nodeFactory.get(name);
+            const node = this.#nodeFactory.get(name);
             const children = node.getTargets();
             for (const ch of children) {
                 res.add(ch);
@@ -249,7 +262,6 @@ export default class LogicGraph {
 
     /* broad search */
     exec(startNode, startData = {}) {
-        const nodeFactory = NODES.get(this);
         const allTargets = this.getTargetNodes();
         let reachableCount = 0;
         const traversedDataMap = new TraverseDataMap();
@@ -259,7 +271,7 @@ export default class LogicGraph {
         const mem_o = MEM_O.get(this);
         const mem_i = MEM_I.get(this);
         const debug = DEBUG.get(this);
-        const start = nodeFactory.get(startNode);
+        const start = this.#nodeFactory.get(startNode);
 
         if (start != null) {
             const startDataWrapper = new DataWrapper(start, startData);
@@ -293,7 +305,7 @@ export default class LogicGraph {
 
             const getData = (dataWrapper) => {
                 return (name) => {
-                    const patternResult = ENTRANCE_PATTERN.exec(name);
+                    const patternResult = EDGE_PATTERN.exec(name);
                     if (patternResult != null) {
                         const [, sourceName, targetName] = patternResult;
                         return this.getRedirect(sourceName, targetName);
@@ -381,7 +393,7 @@ export default class LogicGraph {
                             }
                         }
                         if (name != "") {
-                            const node = nodeFactory.get(name);
+                            const node = this.#nodeFactory.get(name);
                             traversedDataMap.setData(name, dataWrapper);
                             const targets = node.getTargets();
                             for (const ch of targets) {
@@ -435,6 +447,89 @@ export default class LogicGraph {
             }
         }
         return changes;
+    }
+
+    // TODO implement single edge execution
+    // TODO streamline execution into module
+    executeEdge(sourceNode, targetNode, startData = {}) {
+        const mixins = MIXINS.get(this);
+        const mixinParams = MIXIN_PARAMS.get(this);
+        const traversedDataMap = new TraverseDataMap();
+        const mem_o = MEM_O.get(this);
+        const mem_i = MEM_I.get(this);
+        const debug = DEBUG.get(this);
+        const start = this.#nodeFactory.get(sourceNode);
+
+        const getValue = (key) => {
+            if (mem_o.has(key)) {
+                return mem_o.get(key);
+            } else if (mem_i.has(key)) {
+                return mem_i.get(key);
+            }
+            return 0;
+        };
+
+        const getData = (dataWrapper) => {
+            return (name) => {
+                const patternResult = EDGE_PATTERN.exec(name);
+                if (patternResult != null) {
+                    const [, sourceName, targetName] = patternResult;
+                    return this.getRedirect(sourceName, targetName);
+                }
+                return dataWrapper.getData(name);
+            };
+        };
+
+        const execute = (dataWrapper) => {
+            return (name, ...params) => {
+                if (mixins.has(name)) {
+                    const fn = mixins.get(name);
+                    const defParams = mixinParams.get(name);
+
+                    for (const i in defParams) {
+                        if (typeof params[i] == "undefined") {
+                            params[i] = defParams[i];
+                        }
+                    }
+
+                    if (debug == "extended") {
+                        console.groupCollapsed(`execute mixin { ${name} }`);
+                        console.log(fn.toString());
+                        console.log("default parameters: ", defParams);
+                        console.log("call parameters: ", params);
+                    }
+
+                    const res = fn(getValue, getData(dataWrapper), execute(dataWrapper), params);
+
+                    if (debug == "extended") {
+                        console.log(`result: ${res}`);
+                        console.groupEnd(`execute mixin { ${name} }`);
+                    }
+                    return res;
+                }
+                return 0;
+            };
+        };
+
+        const getNewData = (dataWrapper, newData = {}) => {
+            const res = dataWrapper?.getAllData() ?? {};
+            for (const name in newData) {
+                const fn = newData[name];
+                if (typeof fn == "function") {
+                    res[name] = fn(getValue, getData(dataWrapper), execute);
+                }
+            }
+            return res;
+        };
+
+        if (start != null) {
+            const startDataWrapper = new DataWrapper(start, startData);
+            const edge = start.getEdge(targetNode);
+            if (edge != null) {
+                const newData = getNewData(startDataWrapper, edge.getData());
+                const newDataWrapper = new DataWrapper(edge, newData);
+            }
+        }
     }
 
     set(key, value) {

@@ -3,6 +3,8 @@ const TARGET = new WeakMap();
 const LOGIC = new WeakMap();
 const DATA = new WeakMap();
 
+export const EDGE_PATTERN = /^([^ ]+) -> ([^ ]+)$/;
+
 export default class Edge {
 
     constructor(source, target, logic, data) {
