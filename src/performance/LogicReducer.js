@@ -1,4 +1,3 @@
-
 function filterNull(input) {
     return input != null;
 }
