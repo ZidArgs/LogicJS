@@ -12,7 +12,7 @@ export default class Literal extends AbstractLiteral {
     toJSON()  {
         return {
             type: "string",
-            el: this.#ref
+            content: this.#ref
         };
     }
 

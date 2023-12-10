@@ -18,7 +18,7 @@ export default class Literal extends AbstractOperator {
     toJSON()  {
         return {
             type: "regexp",
-            el: this.children.slice(0, 1).map((e) => e.toJSON())[0],
+            content: this.children.slice(0, 1).map((e) => e.toJSON())[0],
             value: this.#value
         };
     }

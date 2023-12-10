@@ -51,7 +51,7 @@ class UnknownElement extends AbstractLiteral {
     toJSON()  {
         return {
             type: "unknown",
-            el: this.#ref
+            content: this.#ref
         };
     }
 

@@ -17,13 +17,13 @@ export default class Literal extends AbstractLiteral {
         if (this.#category != null) {
             return {
                 type: "pointer",
-                el: ref,
+                content: ref,
                 category: this.#category
             };
         } else {
             return {
                 type: "pointer",
-                el: ref
+                content: ref
             };
         }
     }
