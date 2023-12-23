@@ -3,30 +3,33 @@
         "root": {
             "A": {
                 "type": "or",
-                "el": [{
-                    "type": "value",
-                    "el": "test_1"
-                },{
-                    "type": "value",
-                    "el": "test_2"
-                }]
+                "content": [
+                    {
+                        "type": "value",
+                        "content": "test_1"
+                    },
+                    {
+                        "type": "value",
+                        "content": "test_2"
+                    }
+                ]
             }
         },
         "A": {
             "B": {
                 "type": "at",
                 "node": "C",
-                "el": {
+                "content": {
                     "type": "true"
                 }
             },
             "C": {
                 "type": "value",
-                "el": "test_3"
+                "content": "test_3"
             },
             "D": {
                 "type": "mixin",
-                "el": "mix.foobar"
+                "content": "mix.foobar"
             }
         }
     },
@@ -34,7 +37,7 @@
         "mix.foobar": {
             "type": "at",
             "node": "B",
-            "el": {
+            "content": {
                 "type": "true"
             }
         }

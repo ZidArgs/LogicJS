@@ -4,14 +4,14 @@
             "A": {
                 "logic": {
                     "type": "or",
-                    "el": [
+                    "content": [
                         {
                             "type": "value",
-                            "el": "test_1"
+                            "content": "test_1"
                         },
                         {
                             "type": "value",
-                            "el": "test_2"
+                            "content": "test_2"
                         }
                     ]
                 }
@@ -22,7 +22,7 @@
                 "logic": {
                     "type": "at",
                     "node": "C",
-                    "el": {
+                    "content": {
                         "type": "true"
                     }
                 }
@@ -30,13 +30,13 @@
             "C": {
                 "logic": {
                     "type": "value",
-                    "el": "test_3"
+                    "content": "test_3"
                 }
             },
             "D": {
                 "logic": {
                     "type": "mixin",
-                    "el": "mix.foobar"
+                    "content": "mix.foobar"
                 }
             }
         }
@@ -46,7 +46,7 @@
             "logic": {
                 "type": "at",
                 "node": "B",
-                "el": {
+                "content": {
                     "type": "true"
                 }
             }
