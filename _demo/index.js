@@ -24,7 +24,7 @@ const START_VALUES = {
     "option.cowsanity": false,
     "option.shopsanity": "off",
     "option.beansanity": false,
-    "option.shuffleMediCarpet": false,
+    "option.shuffle_expensive_merchants": false,
     "option.doors_open_forest": "doors_open_forest_open",
     "option.doors_open_kakariko": "doors_open_kakariko_closed",
     "option.doors_open_temple": false,
