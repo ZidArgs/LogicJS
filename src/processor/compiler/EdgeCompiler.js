@@ -4,10 +4,9 @@ const TRANSPILERS = {
     "false":    () => "0",
     "string":   (logic) => `${escapeString(logic.content)}`,
     "number":   (logic) => `${escapeNumber(logic.content)}`,
-    "value":    (logic) => `(val(${escapeString(logic.content)})||0)`,
-    "pointer":  (logic) => `(val(val(${escapeString(logic.content)})||"")||0)`,
-    "state":    (logic) => `(val(${escapeString(logic.content)})||"")==${escapeValue(logic.value)}`,
-    "data":     (logic) => `(data(${escapeString(logic.content)})??0)`,
+    "value":    (logic) => `(val(${escapeString(logic.ref)})||0)`,
+    "state":    (logic) => `(val(${escapeString(logic.ref)})||"")==${escapeValue(logic.value)}`,
+    "data":     (logic) => `(data(${escapeString(logic.ref)})??0)`,
 
     /* operators */
     "and":      (logic) => `${multiElementOperation(logic.content, "&&")}`,
@@ -40,7 +39,7 @@ const TRANSPILERS = {
     "pow":      (logic) => mathTwoElementOperation(logic.content, "**"),
 
     /* logic */
-    "mixin":    (logic) => `exec(${escapeString(logic.content)}${functionParams(logic.params)})`,
+    "mixin":    (logic) => `exec(${escapeString(logic.ref)}${functionParams(logic.params)})`,
 
     /* referrer */
     "at":       (logic) => logic.content ? `((val(${escapeString(logic.node)})||0)&&${buildLogic(logic.content)})` : `(val(${escapeString(logic.node)})||0)`

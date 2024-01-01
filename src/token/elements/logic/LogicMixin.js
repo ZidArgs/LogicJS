@@ -12,7 +12,7 @@ export default class Operator extends AbstractOperator {
     toJSON()  {
         return {
             type: "mixin",
-            content: this.#ref,
+            ref: this.#ref,
             params: this.children.map((e) => e.toJSON())
         };
     }

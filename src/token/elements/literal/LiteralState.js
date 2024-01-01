@@ -21,14 +21,14 @@ export default class Literal extends AbstractLiteral {
         if (this.#category != null) {
             return {
                 type: "state",
-                content: ref,
+                ref: ref,
                 value: value,
                 category: this.#category
             };
         } else {
             return {
                 type: "state",
-                content: ref,
+                ref: ref,
                 value: value
             };
         }

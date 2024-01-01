@@ -5,7 +5,6 @@ import LiteralTrue from "./elements/literal/LiteralTrue.js";
 import LiteralString from "./elements/literal/LiteralString.js";
 import LiteralNumber from "./elements/literal/LiteralNumber.js";
 import LiteralValue from "./elements/literal/LiteralValue.js";
-import LiteralPointer from "./elements/literal/LiteralPointer.js";
 import LiteralState from "./elements/literal/LiteralState.js";
 import LiteralParam from "./elements/literal/LiteralParam.js";
 import LiteralData from "./elements/literal/LiteralData.js";
@@ -64,7 +63,6 @@ export default {
     "string":   (...params) => new LiteralString(...params),
     "number":   (...params) => new LiteralNumber(...params),
     "value":    (...params) => new LiteralValue(...params),
-    "pointer":  (...params) => new LiteralPointer(...params),
     "state":    (...params) => new LiteralState(...params),
     "param":    (...params) => new LiteralParam(...params),
     "data":     (...params) => new LiteralData(...params),
