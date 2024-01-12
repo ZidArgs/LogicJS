@@ -2,8 +2,8 @@ const TRANSPILERS = {
     /* literals */
     "true":     () => "1",
     "false":    () => "0",
-    "string":   (logic) => `${escapeString(logic.content)}`,
-    "number":   (logic) => `${escapeNumber(logic.content)}`,
+    "string":   (logic) => `${escapeString(logic.value)}`,
+    "number":   (logic) => `${escapeNumber(logic.value)}`,
     "value":    (logic) => `(val(${escapeString(logic.ref)})||0)`,
     "state":    (logic) => `(val(${escapeString(logic.ref)})||"")==${escapeValue(logic.value)}`,
     "data":     (logic) => `(data(${escapeString(logic.ref)})??0)`,
