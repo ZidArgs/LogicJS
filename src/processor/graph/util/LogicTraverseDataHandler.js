@@ -16,14 +16,14 @@ export default class LogicTraverseDataHandler {
 
     setMutator(mutator) {
         if (mutator != null && typeof mutator !== "function") {
-            throw new TypeError("mutator must be a function or null")
+            throw new TypeError("mutator must be a function or null");
         }
         this.#mutator = mutator ?? LogicTraverseDataHandler.#defaultTraverseDataMutator;
     }
 
     setComparator(comparator) {
         if (comparator != null && typeof comparator !== "function") {
-            throw new TypeError("comparator must be a function or null")
+            throw new TypeError("comparator must be a function or null");
         }
         this.#comparator = comparator ?? LogicTraverseDataHandler.#defaultTraverseDataComparator;
     }

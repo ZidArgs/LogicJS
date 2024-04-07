@@ -19,7 +19,7 @@ export default class LogicProcessor {
 
     constructor(graph) {
         if (!(graph instanceof LogicGraph)) {
-            throw new TypeError("can only run on LogicGraph")
+            throw new TypeError("can only run on LogicGraph");
         }
         this.#graph = graph;
     }

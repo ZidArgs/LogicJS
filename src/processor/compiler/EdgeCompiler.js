@@ -97,7 +97,7 @@ function escapeNumber(val) {
 }
 
 function toNumber(val) {
-    return `(parseInt(${val})||0)`
+    return `(parseInt(${val})||0)`;
 }
 
 function mathTwoElementOperation(els, join) {

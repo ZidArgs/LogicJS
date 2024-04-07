@@ -26,7 +26,7 @@ class CSV {
                 }
             }
             return output;
-        })
+        });
     }
 
 }

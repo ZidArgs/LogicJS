@@ -92,7 +92,7 @@ export default class LogicGenerator {
         const res = {
             edges: {},
             mixins: {}
-        }
+        };
         for (const [name, node] of edges) {
             if (node.hasEdges()) {
                 res.edges[name] = node.generate();

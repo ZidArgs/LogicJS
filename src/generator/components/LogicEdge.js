@@ -32,7 +32,7 @@ export default class LogicEdge {
         return {
             logic: this.getLogic(),
             data: this.getData()
-        }
+        };
     }
 
 }
