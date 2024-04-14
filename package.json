@@ -7,7 +7,7 @@
     "type": "git",
     "url": "git+ssh://git@bitbucket.org/zidargs/logicjs.git"
   },
-  "author": "Denis Peters (ZidArgs)",
+  "author": "Denis Weiß (ZidArgs)",
   "license": "MIT",
   "homepage": "https://bitbucket.org/zidargs/logicjs/src",
   "dependencies": {},
