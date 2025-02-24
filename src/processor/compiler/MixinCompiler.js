@@ -5,7 +5,7 @@ const TRANSPILERS = {
     "string":   (logic) => `${escapeString(logic.value)}`,
     "number":   (logic) => `${escapeNumber(logic.value)}`,
     "value":    (logic) => `(val(${escapeString(logic.ref)})??0)`,
-    "state":    (logic) => `(val(${escapeString(logic.ref)})??0)==${escapeValue(logic.value)}`,
+    "state":    (logic) => `((val(${escapeString(logic.ref)})??0)==${escapeValue(logic.value)})`,
     "param":    (logic) => `(params[${toNumber(logic.ref)}]??0)`,
     "data":     (logic) => `(data(${escapeString(logic.ref)})??0)`,
 

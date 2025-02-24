@@ -15,7 +15,8 @@
         "node": true
     },
     "globals": {
-        "WeakRef": false
+        "WeakRef": false,
+        "Iterator": false
     },
     "rules": {
         "no-unused-expressions": "error",
