@@ -146,7 +146,7 @@ function buildLogic(logic) {
     return 0;
 }
 
-class MixinCompiler {
+class FunctionCompiler {
 
     compile(logic) {
         const buf = buildLogic(logic);
@@ -158,4 +158,4 @@ class MixinCompiler {
 
 }
 
-export default new MixinCompiler;
+export default new FunctionCompiler;

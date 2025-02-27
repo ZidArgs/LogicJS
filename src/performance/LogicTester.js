@@ -1,49 +1,34 @@
 
-import NodeFactory from "../processor/NodeFactory.js";
-import EdgeCompiler from "../processor/compiler/EdgeCompiler.js";
-import MixinCompiler from "../processor/compiler/MixinCompiler.js";
-import TraverseDataMap from "../processor/components/TraverseDataMap.js";
-import DataWrapper from "../processor/components/DataWrapper.js";
-
-const MIXINS = new WeakMap();
-const MIXIN_PARAMS = new WeakMap();
-const MEM_I = new WeakMap();
-const MEM_O = new WeakMap();
-const NODES = new WeakMap();
+import NodeFactory from "../util/NodeFactory.js";
+import EdgeCompiler from "../compiler/EdgeCompiler.js";
+import FunctionCompiler from "../compiler/FunctionCompiler.js";
+import TraverseDataMap from "../../_old/processor/components/TraverseDataMap.js"; // XXX
+import DataMap from "../data/DataMap.js";
 
 export default class LogicTester {
 
-    constructor() {
-        NODES.set(this, new NodeFactory());
-        MIXINS.set(this, new Map());
-        MIXIN_PARAMS.set(this, new Map());
-        MEM_I.set(this, new Map());
-        MEM_O.set(this, new Map());
-    }
+    #nodeFactory = new NodeFactory();
+
+    #logicFunctions = new Map();
+
+    #logicFunctionParams = new Map();
+
+    #memIn = new Map();
+
+    #memOut = new Map(); // XXX is this needed?
 
     clearLogic() {
-        const nodeFactory = NODES.get(this);
-        const mixins = MIXINS.get(this);
-        const mixinParams = MIXIN_PARAMS.get(this);
-        const mem_i = MEM_I.get(this);
-        const mem_o = MEM_O.get(this);
-        // ---
-        nodeFactory.reset();
-        mixins.clear();
-        mixinParams.clear();
-        mem_i.clear();
-        mem_o.clear();
+        this.#nodeFactory.reset();
+        this.#logicFunctions.clear();
+        this.#logicFunctionParams.clear();
+        this.#memIn.clear();
+        this.#memOut.clear();
     }
 
     loadLogic(config) {
-        const nodeFactory = NODES.get(this);
-        const mixins = MIXINS.get(this);
-        const mixinParams = MIXIN_PARAMS.get(this);
-        const mem_o = MEM_O.get(this);
-        // ---
         for (const name in config.edges) {
             const children = config.edges[name];
-            const node = nodeFactory.get(name);
+            const node = this.#nodeFactory.get(name);
             for (const child in children) {
                 const edge = children[child];
                 const logic = edge.logic;
@@ -53,9 +38,9 @@ export default class LogicTester {
                     dataFns[key] = EdgeCompiler.compile(data[key]);
                 }
                 const fn = EdgeCompiler.compile(logic);
-                node.append(nodeFactory.get(child), fn, dataFns);
-                if (!mem_o.has(child)) {
-                    mem_o.set(child, false);
+                node.append(this.#nodeFactory.get(child), fn, dataFns);
+                if (!this.#memOut.has(child)) {
+                    this.#memOut.set(child, false);
                 }
             }
         }
@@ -63,73 +48,29 @@ export default class LogicTester {
             const mixin = config.mixins[name];
             const logic = mixin.logic;
             const params = mixin.params;
-            const fn = MixinCompiler.compile(logic);
-            mixins.set(name, fn);
-            mixinParams.set(name, params ?? []);
+            const fn = FunctionCompiler.compile(logic);
+            this.#logicFunctions.set(name, fn);
+            this.#logicFunctionParams.set(name, params ?? []);
         }
     }
 
     setAll(values) {
-        const mem_i = MEM_I.get(this);
         if (values instanceof Map) {
             for (const [k, v] of values) {
-                mem_i.set(k, v);
+                this.#memIn.set(k, v);
             }
         } else if (typeof values == "object" && !Array.isArray(values)) {
             for (const k in values) {
                 const v = values[k];
-                mem_i.set(k, v);
+                this.#memIn.set(k, v);
             }
         }
     }
 
-    getMixins() {
-        const mixins = MIXINS.get(this);
+    getFunctions() {
         const res = [];
-        for (const [name] of mixins) {
+        for (const [name] of this.#logicFunctions) {
             res.push(name);
-        }
-        return res;
-    }
-
-    getEdges() {
-        const nodeFactory = NODES.get(this);
-        const nodes = nodeFactory.getNames();
-        const res = [];
-        for (const name of nodes) {
-            const node = nodeFactory.get(name);
-            const children = node.getTargets();
-            for (const ch of children) {
-                res.push([name, ch]);
-            }
-        }
-        return res;
-    }
-
-    getEdgeInstances() {
-        const nodeFactory = NODES.get(this);
-        const nodes = nodeFactory.getNames();
-        const res = [];
-        for (const name of nodes) {
-            const node = nodeFactory.get(name);
-            const children = node.getTargets();
-            for (const ch of children) {
-                res.push(node.getEdge(ch));
-            }
-        }
-        return res;
-    }
-
-    getTargetNodes() {
-        const nodeFactory = NODES.get(this);
-        const nodes = nodeFactory.getNames();
-        const res = new Set();
-        for (const name of nodes) {
-            const node = nodeFactory.get(name);
-            const children = node.getTargets();
-            for (const ch of children) {
-                res.add(ch);
-            }
         }
         return res;
     }
@@ -137,27 +78,24 @@ export default class LogicTester {
     testLogic(startData = {}) {
         return {
             edges: this.#executeEdges(startData),
-            mixins: this.#executeMixins(startData)
+            mixins: this.#executeFunctions(startData)
         };
     }
 
     /* all edges */
     #executeEdges(startData) {
-        const allTargets = this.getTargetNodes();
+        const allTargets = this.#nodeFactory.getAllTargetedNodes();
         const traversedDataMap = new TraverseDataMap();
-        const mixins = MIXINS.get(this);
-        const mixinParams = MIXIN_PARAMS.get(this);
-        const mem_i = MEM_I.get(this);
-        const queue = this.getEdgeInstances();
+        const queue = this.#nodeFactory.getAllEdges();
         const success = new Set();
         const failed = new Set();
-        const dataWrapper = new DataWrapper(null, startData);
+        const executionData = new DataMap(startData);
 
         const getValue =  (key) => {
             if (allTargets.has(key)) {
                 return +traversedDataMap.has(key);
-            } else if (mem_i.has(key)) {
-                return mem_i.get(key);
+            } else if (this.#memIn.has(key)) {
+                return this.#memIn.get(key);
             }
             return 0;
         };
@@ -168,17 +106,17 @@ export default class LogicTester {
             };
         };
 
-        const execute = (dataWrapper) => {
+        const execute = (executionData) => {
             return (name, ...params) => {
-                if (mixins.has(name)) {
-                    const fn = mixins.get(name);
-                    const defParams = mixinParams.get(name);
+                if (this.#logicFunctions.has(name)) {
+                    const fn = this.#logicFunctions.get(name);
+                    const defParams = this.#logicFunctionParams.get(name);
                     for (const i in defParams) {
                         if (typeof params[i] == "undefined") {
                             params[i] = defParams[i];
                         }
                     }
-                    const res = fn(getValue, getData(dataWrapper), execute(dataWrapper), params);
+                    const res = fn(getValue, getData(executionData), execute(executionData), params);
                     return res;
                 }
                 return 0;
@@ -192,12 +130,12 @@ export default class LogicTester {
             while (counts--) {
                 const edge = queue.shift();
                 const fn = edge.getCondition();
-                const res = fn(getValue, getData(dataWrapper), execute(dataWrapper));
+                const res = fn(getValue, getData(executionData), execute(executionData));
                 if (res) {
                     success.add(edge.toString());
                     changed = true;
                     const name = edge.getTarget().getName();
-                    traversedDataMap.setData(name, dataWrapper);
+                    traversedDataMap.setData(name, executionData);
                 } else {
                     queue.push(edge);
                 }
@@ -212,21 +150,18 @@ export default class LogicTester {
     }
 
     /* all mixins */
-    #executeMixins(startData) {
-        const mixins = MIXINS.get(this);
-        const mixinParams = MIXIN_PARAMS.get(this);
-        const allTargets = this.getTargetNodes();
-        const mem_i = MEM_I.get(this);
+    #executeFunctions(startData) {
+        const allTargets = this.#nodeFactory.getAllTargetedNodes();
         const success = new Set();
         const failed = new Set();
 
-        const dataWrapper = new DataWrapper(null, startData);
+        const executionData = new DataMap(startData);
 
         const getValue =  (key) => {
             if (allTargets.has(key)) {
                 return 1;
-            } else if (mem_i.has(key)) {
-                return mem_i.get(key);
+            } else if (this.#memIn.has(key)) {
+                return this.#memIn.get(key);
             }
             return 0;
         };
@@ -237,25 +172,25 @@ export default class LogicTester {
             };
         };
 
-        const execute = (dataWrapper) => {
+        const execute = (executionData) => {
             return (name, ...params) => {
-                if (mixins.has(name)) {
-                    const fn = mixins.get(name);
-                    const defParams = mixinParams.get(name);
+                if (this.#logicFunctions.has(name)) {
+                    const fn = this.#logicFunctions.get(name);
+                    const defParams = this.#logicFunctionParams.get(name);
                     for (const i in defParams) {
                         if (typeof params[i] == "undefined") {
                             params[i] = defParams[i];
                         }
                     }
-                    const res = fn(getValue, getData(dataWrapper), execute(dataWrapper), params);
+                    const res = fn(getValue, getData(executionData), execute(executionData), params);
                     return res;
                 }
                 return 0;
             };
         };
 
-        for (const [name, fn] of mixins) {
-            const res = fn(getValue, getData(dataWrapper), execute(dataWrapper));
+        for (const [name, fn] of this.#logicFunctions) {
+            const res = fn(getValue, getData(executionData), execute(executionData));
             if (res) {
                 success.add(name);
             } else {

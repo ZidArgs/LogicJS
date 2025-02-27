@@ -1,27 +1,19 @@
-const ACTIVE = new Set();
-
 class DebugOptions {
 
-    #active = false;
+    #active = new Set();
 
-    get active() {
-        return this.#active;
+    has(name) {
+        return this.#active.has(name);
     }
 
-    set active(value) {
-        this.#active = value;
+    set(name) {
+        this.#active.add(name);
+        return this;
     }
 
-    isActive(name) {
-        return ACTIVE.has(name);
-    }
-
-    activate(name) {
-        ACTIVE.add(name);
-    }
-
-    deactivate(name) {
-        ACTIVE.delete(name);
+    unset(name) {
+        this.#active.delete(name);
+        return this;
     }
 
 }

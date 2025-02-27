@@ -12,4 +12,4 @@ const treeLogic = new TreeLogic();
 
 treeLogic.loadLogic(JSON.parse(fs.readFileSync(inLogicFile).toString()), false);
 
-fs.writeFileSync(outLogicFile, JSON.stringify(treeLogic.render(), null, 4));
+fs.writeFileSync(outLogicFile, JSON.stringify(treeLogic.serialize(), null, 4));

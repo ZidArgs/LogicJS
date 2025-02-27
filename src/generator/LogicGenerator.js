@@ -1,24 +1,19 @@
-import LogicMixin from "./components/LogicMixin.js";
-import LogicNode from "./components/LogicNode.js";
-
-const EDGES = new WeakMap();
-const MIXINS = new WeakMap();
+import LogicFunction from "../components/LogicFunction.js";
+import Node from "../components/graph/Node.js";
 
 export default class LogicGenerator {
 
-    constructor() {
-        EDGES.set(this, new Map());
-        MIXINS.set(this, new Map());
-    }
+    #nodes;
+
+    #logicFunctions;
 
     getNode(name) {
-        const edges = EDGES.get(this);
-        if (!edges.has(name)) {
-            const node = new LogicNode(name);
-            edges.set(name, node);
+        if (!this.#nodes.has(name)) {
+            const node = new Node(name);
+            this.#nodes.set(name, node);
             return node;
         }
-        return edges.get(name);
+        return this.#nodes.get(name);
     }
 
     setEdge(source, target, logic, data) {
@@ -57,17 +52,15 @@ export default class LogicGenerator {
         }
     }
 
-    setMixin(name, logic, params) {
-        const mixins = MIXINS.get(this);
-        mixins.set(name, new LogicMixin(logic, params));
+    setFunction(name, logic, params) {
+        this.#logicFunctions.set(name, new LogicFunction(logic, params));
     }
 
-    removeMixin(name) {
-        const mixins = MIXINS.get(this);
-        mixins.delete(name);
+    removeFunction(name) {
+        this.#logicFunctions.delete(name);
     }
 
-    loadMixins(config) {
+    loadFunctions(config) {
         for (const name in config) {
             const fn = config[name];
             if (fn == null) {
@@ -83,24 +76,22 @@ export default class LogicGenerator {
 
     loadLogic(config) {
         this.loadEdges(config.edges);
-        this.loadMixins(config.mixins);
+        this.loadMixins(config.functions ?? config.mixins);
     }
 
-    generate() {
-        const edges = EDGES.get(this);
-        const mixins = MIXINS.get(this);
+    serialize() {
         const res = {
             edges: {},
-            mixins: {}
+            functions: {}
         };
-        for (const [name, node] of edges) {
-            if (node.hasEdges()) {
-                res.edges[name] = node.generate();
+        for (const [name, node] of this.#nodes) {
+            if (!node.isLeaf()) {
+                res.edges[name] = node.serialize();
             }
         }
-        for (const [name, fn] of mixins) {
-            const mixin = fn.generate();
-            res.mixins[name] = mixin;
+        for (const [name, fn] of this.#logicFunctions) {
+            const logicFunction = fn.serialize();
+            res.functions[name] = logicFunction;
         }
         return res;
     }

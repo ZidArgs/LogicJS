@@ -3,7 +3,9 @@ const TARGET = new WeakMap();
 const LOGIC = new WeakMap();
 const DATA = new WeakMap();
 
-export default class LogicEdge {
+export const EDGE_PATTERN = /^([^ ]+) -> ([^ ]+)$/;
+
+export default class Edge {
 
     constructor(source, target, logic, data) {
         SOURCE.set(this, source);
@@ -28,7 +30,11 @@ export default class LogicEdge {
         return SOURCE.get(this);
     }
 
-    generate() {
+    toString() {
+        return `${SOURCE.get(this)} -> ${TARGET.get(this)}`;
+    }
+
+    serialize() {
         return {
             logic: this.getLogic(),
             data: this.getData()
