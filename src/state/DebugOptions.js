@@ -1,18 +1,26 @@
+import DebugValues from "../enum/DebugValues.js";
+
 class DebugOptions {
 
     #active = new Set();
 
-    has(name) {
-        return this.#active.has(name);
+    has(option) {
+        return this.#active.has(option);
     }
 
-    set(name) {
-        this.#active.add(name);
+    set(option) {
+        if (!DebugValues.includes(option)) {
+            throw new TypeError("option has to be a value of DebugValues");
+        }
+        this.#active.add(option);
         return this;
     }
 
-    unset(name) {
-        this.#active.delete(name);
+    unset(option) {
+        if (!DebugValues.includes(option)) {
+            throw new TypeError("option has to be a value of DebugValues");
+        }
+        this.#active.delete(option);
         return this;
     }
 

@@ -1,6 +1,6 @@
 import AbstractOperator from "../abstract/AbstractOperator.js";
 
-export default class Operator extends AbstractOperator {
+export default class FunctionReference extends AbstractOperator {
 
     #ref;
 
@@ -11,7 +11,7 @@ export default class Operator extends AbstractOperator {
 
     toJSON()  {
         return {
-            type: "mixin",
+            type: "function",
             ref: this.#ref,
             params: this.children.map((e) => e.toJSON())
         };

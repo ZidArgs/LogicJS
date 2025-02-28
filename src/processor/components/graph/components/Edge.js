@@ -1,6 +1,8 @@
+import ProcessorStatement from "../../ProcessorStatement.js";
 import AbstractNode from "./AbstractNode.js";
 
-export const EDGE_PATTERN = /^([^ ]+) -> ([^ ]+)$/;
+const EDGE_SPLITTER = " -> ";
+const EDGE_PATTERN = /^([^\s]+) -> ([^\s]+)$/;
 
 export default class Edge {
 
@@ -18,6 +20,9 @@ export default class Edge {
         }
         if (!(target instanceof AbstractNode)) {
             throw new TypeError("target must be a descendant of AbstractNode");
+        }
+        if (!(logic instanceof ProcessorStatement)) {
+            throw new TypeError("logic must be a ProcessorStatement");
         }
         this.#source = source;
         this.#target = target;
@@ -49,11 +54,24 @@ export default class Edge {
     }
 
     toString() {
-        return `${this.#source} -> ${this.#target}`;
+        return Edge.createEdgeId(this.#source, this.#target);
     }
 
     toEntry() {
         return [this.#source, this.#target];
+    }
+
+    static createEdgeId(source, target) {
+        return `${source}${EDGE_SPLITTER}${target}`;
+    }
+
+    static splitEdgeId(edgeId) {
+        const patternResult = EDGE_PATTERN.exec(edgeId);
+        if (patternResult != null) {
+            const [, sourceName, targetName] = patternResult;
+            return [sourceName, targetName];
+        }
+        return null;
     }
 
 }

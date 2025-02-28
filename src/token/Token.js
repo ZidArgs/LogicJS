@@ -34,7 +34,7 @@ import MathDiv from "./elements/math/MathDiv.js";
 import MathMod from "./elements/math/MathMod.js";
 import MathPow from "./elements/math/MathPow.js";
 /* logic */
-import LogicMixin from "./elements/logic/LogicMixin.js";
+import FunctionReference from "./elements/logic/FunctionReference.js";
 /* referrer */
 import ReferrerAt from "./elements/referrer/ReferrerAt.js";
 
@@ -92,7 +92,7 @@ export default {
     "mod":      (...params) => new MathMod(...params),
     "pow":      (...params) => new MathPow(...params),
     /* logic */
-    "mixin":    (...params) => new LogicMixin(...params),
+    "function":    (...params) => new FunctionReference(...params),
     /* referrer */
     "at":       (...params) => new ReferrerAt(...params),
     /* unknown */

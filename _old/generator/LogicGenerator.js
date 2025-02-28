@@ -67,16 +67,16 @@ export default class LogicGenerator {
                 continue;
             }
             if (fn.logic == null) {
-                this.setMixin(name, fn);
+                this.setFunction(name, fn);
             } else {
-                this.setMixin(name, fn.logic, fn.params);
+                this.setFunction(name, fn.logic, fn.params);
             }
         }
     }
 
     loadLogic(config) {
         this.loadEdges(config.edges);
-        this.loadMixins(config.functions ?? config.mixins);
+        this.loadFunctions(config.functions ?? config.mixins);
     }
 
     serialize() {

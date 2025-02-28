@@ -1,3 +1,5 @@
+import ProcessorStatement from "../processor/components/ProcessorStatement.js";
+
 const TRANSPILERS = {
     /* literals */
     "true":     () => "1",
@@ -40,7 +42,7 @@ const TRANSPILERS = {
     "pow":      (logic) => mathTwoElementOperation(logic.content, "**"),
 
     /* logic */
-    "mixin":    (logic) => `exec(${escapeString(logic.ref)}${functionParams(logic.params)})`,
+    "function":    (logic) => `exec(${escapeString(logic.ref)}${functionParams(logic.params)})`,
 
     /* referrer */
     "at":       (logic) => logic.content ? `((val(${escapeString(logic.node)})??0)&&${buildLogic(logic.content)})` : `(val(${escapeString(logic.node)})??0)`
@@ -146,16 +148,15 @@ function buildLogic(logic) {
     return 0;
 }
 
-class FunctionCompiler {
+class StatementCompiler {
 
-    compile(logic) {
-        const buf = buildLogic(logic);
-        const fn = new Function("val", "data", "exec", "params", `return ${buf}`);
-        Object.defineProperty(fn, "requires", {value: dependencies});
+    compile(source, params = {}) {
+        const statement = buildLogic(source);
+        const fn = new ProcessorStatement(statement, {dependencies, params, source});
         dependencies.clear();
         return fn;
     }
 
 }
 
-export default new FunctionCompiler;
+export default new StatementCompiler();

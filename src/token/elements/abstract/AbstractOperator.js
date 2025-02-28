@@ -6,7 +6,7 @@ export default class AbstractOperator extends AbstractLiteral {
 
     constructor() {
         super();
-        if (new.target === AbstractLiteral) {
+        if (new.target === AbstractOperator) {
             throw new TypeError("Cannot construct AbstractOperator instances directly");
         }
     }

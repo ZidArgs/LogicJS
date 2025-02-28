@@ -1,4 +1,4 @@
-import Node from "../components/graph/Node.js";
+import Node from "../processor/components/graph/components/Node.js";
 
 export default class NodeFactory {
 
@@ -8,7 +8,14 @@ export default class NodeFactory {
         this.#nodes.clear();
     }
 
-    get(name) {
+    getNode(name) {
+        if (this.#nodes.has(name)) {
+            return this.#nodes.get(name);
+        }
+        return null;
+    }
+
+    getOrCreateNode(name) {
         if (this.#nodes.has(name)) {
             return this.#nodes.get(name);
         }
@@ -17,8 +24,8 @@ export default class NodeFactory {
         return node;
     }
 
-    getNames() {
-        return this.#nodes.keys();
+    getAllNodes() {
+        return this.#nodes.values();
     }
 
     getAllEdges() {
