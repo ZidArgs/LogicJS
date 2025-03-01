@@ -1,11 +1,17 @@
 import Node from "../processor/components/graph/components/Node.js";
+import {
+    debounceCacheData
+} from "./Debouncer.js";
 
-export default class NodeFactory {
+export default class NodeFactory extends EventTarget {
 
     #nodes = new Map();
 
     clear() {
         this.#nodes.clear();
+        this.#notifyAddedNodes.cancel();
+        const event = new Event("clear");
+        this.dispatchEvent(event);
     }
 
     getNode(name) {
@@ -21,6 +27,7 @@ export default class NodeFactory {
         }
         const node = new Node(name);
         this.#nodes.set(name, node);
+        this.#notifyAddedNodes(name);
         return node;
     }
 
@@ -49,5 +56,11 @@ export default class NodeFactory {
         }
         return res;
     }
+
+    #notifyAddedNodes = debounceCacheData((newNodes) => {
+        const event = new Event("added");
+        event.added = newNodes;
+        this.dispatchEvent(event);
+    });
 
 }

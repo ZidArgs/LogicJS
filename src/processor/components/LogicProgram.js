@@ -7,11 +7,24 @@ const LOG_GROUP_LOAD_LOGIC = "LogicProgram - load";
 const LOG_BUILD_FUNCTIONS = "LogicProgram - build functions";
 const LOG_SET_FUNCTION = "LogicProgram - set function";
 
-export default class LogicProgram {
+export default class LogicProgram extends EventTarget {
 
     #graph = new LogicGraph();
 
     #logicFunctions = new Map();
+
+    constructor() {
+        super();
+        this.#graph.addEventListener("cleared_nodes", () => {
+            const ev = new Event("cleared_nodes");
+            this.dispatchEvent(ev);
+        });
+        this.#graph.addEventListener("added_nodes", (event) => {
+            const ev = new Event("added_nodes");
+            ev.added = event.added;
+            this.dispatchEvent(ev);
+        });
+    }
 
     clear() {
         this.#graph.clear();
@@ -23,15 +36,13 @@ export default class LogicProgram {
             console.groupCollapsed(LOG_GROUP_LOAD_LOGIC);
         }
 
-        const targetNodes = this.#graph.load(config.edges);
+        this.#graph.load(config.edges);
 
         this.#buildFunctions(config.functions);
 
         if (DebugOptions.has(DebugValues.LOGIC_CHANGES)) {
             console.groupCollapsed(LOG_GROUP_LOAD_LOGIC);
         }
-
-        return targetNodes;
     }
 
     setEdge(sourceName, targetName, logic, data) {

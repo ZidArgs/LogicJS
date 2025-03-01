@@ -7,7 +7,7 @@ export default class Node extends AbstractNode {
 
     append(node, logic, transformData) {
         if (node instanceof AbstractNode) {
-            this.#edges.set(node.getName(), new Edge(this, node, logic, transformData));
+            this.#edges.set(node.name, new Edge(this, node, logic, transformData));
         } else {
             throw new TypeError("Expected type Node");
         }

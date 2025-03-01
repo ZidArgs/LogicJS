@@ -7,9 +7,22 @@ const LOG_CLEAR = "LogicGraph - clear";
 const LOG_LOAD = "LogicGraph - load";
 const LOG_ADD_EDGE = "LogicGraph - setEdge";
 
-export default class LogicGraph {
+export default class LogicGraph extends EventTarget {
 
     #nodeFactory = new NodeFactory();
+
+    constructor() {
+        super();
+        this.#nodeFactory.addEventListener("clear", () => {
+            const ev = new Event("cleared_nodes");
+            this.dispatchEvent(ev);
+        });
+        this.#nodeFactory.addEventListener("added", (event) => {
+            const ev = new Event("added_nodes");
+            ev.added = event.added;
+            this.dispatchEvent(ev);
+        });
+    }
 
     clear() {
         if (DebugOptions.has(DebugValues.LOGIC_CHANGES)) {
@@ -19,8 +32,6 @@ export default class LogicGraph {
     }
 
     load(config) {
-        const targetNodes = new Set();
-
         if (DebugOptions.has(DebugValues.LOGIC_CHANGES)) {
             console.time(LOG_LOAD);
         }
@@ -35,15 +46,12 @@ export default class LogicGraph {
 
                 const targetNode = this.#nodeFactory.getOrCreateNode(child);
                 this.#createEdge(sourceNode, targetNode, logic, data);
-                targetNodes.add(child);
             }
         }
 
         if (DebugOptions.has(DebugValues.LOGIC_CHANGES)) {
             console.timeEnd(LOG_LOAD);
         }
-
-        return Array.from(targetNodes);
     }
 
     setEdge(sourceName, targetName, logic, data) {

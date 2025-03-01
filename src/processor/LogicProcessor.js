@@ -2,12 +2,12 @@ import DataMap from "../data/DataMap.js";
 import DebugOptions from "../state/DebugOptions.js";
 import DebugValues from "../enum/DebugValues.js";
 import LogicProgram from "./components/LogicProgram.js";
+import LogicRedirects from "./components/LogicRedirects.js";
 
 const LOG_SET_MEMORY_IN = "GRAPH LOGIC INPUT MEMORY SET";
 const LOG_CLEAR_MEMORY_FULL = "GRAPH LOGIC FULL MEMORY RESET";
 const LOG_CLEAR_MEMORY_OUT = "GRAPH LOGIC OUTPUT MEMORY RESET";
 
-// TODO add redirects
 // TODO add execution
 export default class LogicProcessor {
 
@@ -17,24 +17,45 @@ export default class LogicProcessor {
 
     #memOut = new DataMap();
 
+    #redirects = new LogicRedirects();
+
     #forcedReachable = new Set();
 
     #dirty = false;
 
-    isDirty() {
-        return this.#dirty;
+    constructor() {
+        this.#program.addEventListener("cleared_nodes", () => {
+            this.#memOut.clear();
+            this.#dirty = true;
+        });
+        this.#program.addEventListener("added_nodes", (event) => {
+            for (const nodeName of event.added) {
+                if (!this.#memOut.has(nodeName)) {
+                    this.#memOut.set(nodeName, false);
+                }
+            }
+            this.#dirty = true;
+        });
     }
 
-    loadLogic(config) {
-        const targetNodes = this.#program.load(config);
+    reset() {
+        this.#program.clear();
+        this.#redirects.clear();
+        this.#forcedReachable.clear();
+        this.resetMemory();
+        this.#dirty = false;
+    }
 
-        for (const nodeName in targetNodes) {
-            if (!this.#memOut.has(nodeName)) {
-                this.#memOut.set(nodeName, false);
-            }
-        }
+    get program() {
+        return this.#program;
+    }
 
-        this.#dirty = true;
+    get redirects() {
+        return this.#redirects;
+    }
+
+    isDirty() {
+        return this.#dirty;
     }
 
     setInput(key, value) {
@@ -102,6 +123,11 @@ export default class LogicProcessor {
         this.#memIn.clear();
         this.#memOut.clear();
 
+        for (const node of this.#program.getAllTargetedNodes()) {
+            const nodeName = node.name;
+            this.#memOut.set(nodeName, false);
+        }
+
         this.#dirty = true;
     }
 
@@ -111,6 +137,11 @@ export default class LogicProcessor {
         }
 
         this.#memOut.clear();
+
+        for (const node of this.#program.getAllTargetedNodes()) {
+            const nodeName = node.name;
+            this.#memOut.set(nodeName, false);
+        }
 
         this.#dirty = true;
     }
