@@ -1,73 +1,67 @@
-export function determineNeedsUpdate(targetDataList, compareData) {
-    // check child data
-    if (compareData.get("child")) {
-        for (const targetData of targetDataList) {
-            if (targetData.get("child")) {
-                if (!targetData.get("day") && compareData.get("day")) {
-                    return true;
-                }
-                if (!targetData.get("night") && compareData.get("night")) {
-                    return true;
-                }
-                if (!targetData.get("dampe") && compareData.get("dampe")) {
-                    return true;
-                }
+import DataMap from "../../src/data/DataMap.js";
+
+export function traverseDataMapForcedReachableData() {
+    const res = [];
+
+    const childData = new DataMap();
+    childData.set("era", "child");
+    childData.set("day", true);
+    childData.set("night", true);
+    childData.set("dampe", true);
+    res.push(childData);
+
+    const adultData = new DataMap();
+    adultData.set("era", "adult");
+    adultData.set("day", true);
+    adultData.set("night", true);
+    adultData.set("dampe", true);
+    res.push(adultData);
+
+    return res;
+}
+
+export function traverseDataMapHasData(targetDataList, compareData) {
+    const compareDataEra = compareData.get("era");
+    for (const targetData of targetDataList) {
+        if (targetData.get("era") == compareDataEra) {
+            if (!targetData.get("day") && compareData.get("day")) {
+                return false;
             }
+            if (!targetData.get("night") && compareData.get("night")) {
+                return false;
+            }
+            if (!targetData.get("dampe") && compareData.get("dampe")) {
+                return false;
+            }
+            return true;
         }
     }
-    // check adult data
-    if (compareData.get("adult")) {
-        for (const targetData of targetDataList) {
-            if (targetData.get("adult")) {
-                if (!targetData.get("day") && compareData.get("day")) {
-                    return true;
-                }
-                if (!targetData.get("night") && compareData.get("night")) {
-                    return true;
-                }
-                if (!targetData.get("dampe") && compareData.get("dampe")) {
-                    return true;
-                }
-            }
-        }
-    }
-    // no update is needed
     return false;
 }
 
-export function updateData(targetDataList, compareData) {
-    // update child data
-    if (compareData.get("child")) {
-        for (const targetData of targetDataList) {
-            if (targetData.get("child")) {
-                if (compareData.get("day")) {
-                    targetData.set("day", true);
-                }
-                if (compareData.get("night")) {
-                    targetData.set("night", true);
-                }
-                if (compareData.get("dampe")) {
-                    targetData.set("dampe", true);
-                }
+export function traverseDataMapUpdateData(targetDataList, compareData) {
+    const compareDataEra = compareData.get("era");
+    let found = false;
+    for (const targetData of targetDataList) {
+        if (targetData.get("era") == compareDataEra) {
+            found = true;
+            if (compareData.get("day")) {
+                targetData.set("day", true);
+            }
+            if (compareData.get("night")) {
+                targetData.set("night", true);
+            }
+            if (compareData.get("dampe")) {
+                targetData.set("dampe", true);
             }
         }
-        // add if nothing was found
     }
-    // update adult data
-    if (compareData.get("adult")) {
-        for (const targetData of targetDataList) {
-            if (targetData.get("adult")) {
-                if (compareData.get("day")) {
-                    targetData.set("day", true);
-                }
-                if (compareData.get("night")) {
-                    targetData.set("night", true);
-                }
-                if (compareData.get("dampe")) {
-                    targetData.set("dampe", true);
-                }
-            }
-        }
-        // add if nothing was found
+    if (!found) {
+        const targetData = new DataMap();
+        targetData.set("era", compareData.get("era"));
+        targetData.set("day", !!compareData.get("day"));
+        targetData.set("night", !!compareData.get("night"));
+        targetData.set("dampe", !!compareData.get("dampe"));
+        targetDataList.push(targetData);
     }
 }
