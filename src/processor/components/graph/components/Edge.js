@@ -1,4 +1,4 @@
-import ProcessorStatement from "../../ProcessorStatement.js";
+import LogicStatement from "../../LogicStatement.js";
 import AbstractNode from "./AbstractNode.js";
 
 const EDGE_SPLITTER = " -> ";
@@ -16,12 +16,12 @@ export default class Edge {
 
     constructor(source, target, logic, transformData) {
         if (!(source instanceof AbstractNode)) {
-            throw new TypeError("source must be a descendant of AbstractNode");
+            throw new TypeError("source must be an instance of AbstractNode");
         }
         if (!(target instanceof AbstractNode)) {
-            throw new TypeError("target must be a descendant of AbstractNode");
+            throw new TypeError("target must be an instance of AbstractNode");
         }
-        if (!(logic instanceof ProcessorStatement)) {
+        if (!(logic instanceof LogicStatement)) {
             throw new TypeError("logic must be a ProcessorStatement");
         }
         this.#source = source;

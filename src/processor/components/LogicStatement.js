@@ -1,6 +1,6 @@
 const PARAM_TYPES = ["undefined", "boolean", "number", "string"];
 
-export default class ProcessorStatement extends Function {
+export default class LogicStatement extends Function {
 
     #dependencies = new Set();
 
@@ -17,7 +17,7 @@ export default class ProcessorStatement extends Function {
                 this.#dependencies.add(req);
             }
         }
-        this.#params = ProcessorStatement.parseParams(params);
+        this.#params = LogicStatement.parseParams(params);
     }
 
     get source() {

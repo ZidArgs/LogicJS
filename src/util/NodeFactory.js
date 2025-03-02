@@ -1,3 +1,4 @@
+import UsageCounter from "../data/UsageCounter.js";
 import Node from "../processor/components/graph/components/Node.js";
 import {
     debounceCacheData
@@ -6,6 +7,10 @@ import {
 export default class NodeFactory extends EventTarget {
 
     #nodes = new Map();
+
+    #targetedNodes = new UsageCounter();
+
+    #leafNodes = new Set();
 
     clear() {
         this.#nodes.clear();
@@ -26,6 +31,17 @@ export default class NodeFactory extends EventTarget {
             return this.#nodes.get(name);
         }
         const node = new Node(name);
+        this.#leafNodes.add(node);
+        node.addEventListener("edge_added", (event) => {
+            this.#targetedNodes.increase(event.targetNode);
+            this.#leafNodes.delete(event.sourceNode);
+        });
+        node.addEventListener("edge_removed", (event) => {
+            this.#targetedNodes.decrease(event.targetNode);
+            if (event.sourceNode.isLeaf()) {
+                this.#leafNodes.add(event.sourceNode);
+            }
+        });
         this.#nodes.set(name, node);
         this.#notifyAddedNodes(name);
         return node;
@@ -49,12 +65,11 @@ export default class NodeFactory extends EventTarget {
     }
 
     getAllTargetedNodes() {
-        const edges = this.getEdges();
-        const res = new Set();
-        for (const edge of edges) {
-            res.add(edge.target);
-        }
-        return res;
+        return this.#targetedNodes.all();
+    }
+
+    getAllLeafNodes() {
+        return Array.from(this.#leafNodes.keys());
     }
 
     #notifyAddedNodes = debounceCacheData((newNodes) => {

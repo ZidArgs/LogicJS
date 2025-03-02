@@ -8,4 +8,8 @@ export default class DebugValues extends Enum {
 
     static REDIRECT_CHANGES = new this("REDIRECT_CHANGES");
 
+    static EXECUTE_LOGIC = new this("EXECUTE_LOGIC");
+
+    static TRAVERSE_GRAPH = new this("TRAVERSE_GRAPH");
+
 }

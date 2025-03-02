@@ -1,6 +1,6 @@
 const NODE_NAME_PATTERN = /^([^\s]+)$/;
 
-export default class AbstractNode {
+export default class AbstractNode extends EventTarget {
 
     #name;
 
@@ -11,6 +11,7 @@ export default class AbstractNode {
         if (!NODE_NAME_PATTERN.test(name)) {
             throw new Error("name must be an unemty string with no whitespace");
         }
+        super();
         this.#name = name;
     }
 

@@ -1,4 +1,4 @@
-import ProcessorStatement from "../processor/components/ProcessorStatement.js";
+import LogicStatement from "../processor/components/LogicStatement.js";
 
 const TRANSPILERS = {
     /* literals */
@@ -152,7 +152,7 @@ class StatementCompiler {
 
     compile(source, params = {}) {
         const statement = buildLogic(source);
-        const fn = new ProcessorStatement(statement, {dependencies, params, source});
+        const fn = new LogicStatement(statement, {dependencies, params, source});
         dependencies.clear();
         return fn;
     }

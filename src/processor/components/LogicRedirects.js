@@ -62,6 +62,14 @@ export default class LogicRedirects {
         return target;
     }
 
+    getAll() {
+        const res = {};
+        for (const [key, value] of this.#redirects) {
+            res[key] = value;
+        }
+        return res;
+    }
+
     clear() {
         if (DebugOptions.has(DebugValues.REDIRECT_CHANGES)) {
             console.log(LOG_RESET_REDIRECT);

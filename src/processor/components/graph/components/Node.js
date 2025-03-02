@@ -6,18 +6,28 @@ export default class Node extends AbstractNode {
     #edges = new Map();
 
     append(node, logic, transformData) {
-        if (node instanceof AbstractNode) {
-            this.#edges.set(node.name, new Edge(this, node, logic, transformData));
-        } else {
-            throw new TypeError("Expected type Node");
+        if (!(node instanceof AbstractNode)) {
+            throw new TypeError("node must be an instance of AbstractNode");
+        }
+        const newEdge = !this.#edges.has(node.name);
+        this.#edges.set(node.name, new Edge(this, node, logic, transformData));
+        if (newEdge) {
+            const event = new Event("edge_added");
+            event.sourceNode = this;
+            event.targetNode = node;
+            this.dispatchEvent(event);
         }
     }
 
     remove(node) {
-        if (node instanceof AbstractNode) {
-            this.#edges.delete(node.name);
-        } else {
-            throw new TypeError("Expected type Node");
+        if (!(node instanceof AbstractNode)) {
+            throw new TypeError("node must be an instance of AbstractNode");
+        }
+        if (this.#edges.delete(node.name)) {
+            const event = new Event("edge_removed");
+            event.sourceNode = this;
+            event.targetNode = node;
+            this.dispatchEvent(event);
         }
     }
 
