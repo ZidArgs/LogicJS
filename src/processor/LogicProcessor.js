@@ -3,6 +3,7 @@ import DebugOptions from "../state/DebugOptions.js";
 import DebugValues from "../enum/DebugValues.js";
 import LogicProgram from "./components/LogicProgram.js";
 import LogicRedirects from "./components/LogicRedirects.js";
+import LogicGraphExecutor from "./util/LogicGraphExecutor.js";
 
 const LOG_SET_MEMORY_IN = "GRAPH LOGIC INPUT MEMORY SET";
 const LOG_CLEAR_MEMORY_FULL = "GRAPH LOGIC FULL MEMORY RESET";
@@ -20,6 +21,8 @@ export default class LogicProcessor {
     #redirects = new LogicRedirects();
 
     #forcedReachable = new Set();
+
+    #logicGraphExecutor = new LogicGraphExecutor(this.#program, this.#memIn, this.#memOut, this.#redirects, this.#forcedReachable);
 
     #dirty = false;
 
@@ -156,6 +159,11 @@ export default class LogicProcessor {
 
     clearReachables() {
         this.#forcedReachable.clear();
+    }
+
+    execute(startNodeName, startData = {}) {
+        this.#logicGraphExecutor.execute(startNodeName, new DataMap(startData));
+        this.#dirty = false;
     }
 
 }

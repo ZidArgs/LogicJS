@@ -12,9 +12,9 @@ export default class Edge {
 
     #logic;
 
-    #transformData;
+    #dataMutation;
 
-    constructor(source, target, logic, transformData) {
+    constructor(source, target, logic, dataMutation) {
         if (!(source instanceof AbstractNode)) {
             throw new TypeError("source must be an instance of AbstractNode");
         }
@@ -27,7 +27,7 @@ export default class Edge {
         this.#source = source;
         this.#target = target;
         this.#logic = logic;
-        this.#transformData = transformData;
+        this.#dataMutation = dataMutation;
     }
 
     get source() {
@@ -42,14 +42,14 @@ export default class Edge {
         return this.#logic;
     }
 
-    get transformData() {
-        return this.#transformData;
+    get dataMutation() {
+        return this.#dataMutation;
     }
 
     serialize() {
         return {
             logic: this.#logic,
-            transformData: this.#transformData
+            dataMutation: this.#dataMutation
         };
     }
 

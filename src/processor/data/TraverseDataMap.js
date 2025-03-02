@@ -7,34 +7,60 @@ export default class TraverseDataMap {
 
     #reachables = new Map();
 
-    add(name) {
-        if (!this.#reachables.has(name)) {
+    get dataHandler() {
+        return this.#traverseDataHandler;
+    }
+
+    add(name, ...dataList) {
+        if (!this.has(name)) {
             this.#reachables.set(name, []);
         }
-    }
-
-    has(name) {
-        return this.#reachables.has(name);
-    }
-
-    setData(name, data) {
-        this.add(name);
-        if (data != null && data instanceof DataMap) {
-            const reachableData = this.#reachables.get(name);
-            if (this.#traverseDataHandler.determineNeedsUpdate(reachableData, data)) {
-                // TODO update reachable data
+        for (const data of dataList) {
+            if (data != null && data instanceof DataMap) {
+                const reachableData = this.#reachables.get(name);
+                if (!this.#traverseDataHandler.hasData(reachableData, data)) {
+                    this.#traverseDataHandler.updateData(reachableData, data);
+                }
             }
         }
     }
 
-    hasData(name, data) {
+    has(name, data) {
         if (this.#reachables.has(name)) {
             if (data != null && data instanceof DataMap) {
                 const reachableData = this.#reachables.get(name);
-                return !this.#traverseDataHandler.determineNeedsUpdate(reachableData, data);
+                return this.#traverseDataHandler.hasData(reachableData, data);
             }
+            return true;
         }
         return false;
+    }
+
+    get(name) {
+        if (this.has(name)) {
+            const res = [];
+            const dataList = this.#reachables.get(name);
+            for (const data of dataList) {
+                res.push(data);
+            }
+            return res;
+        }
+        return null;
+    }
+
+    getAllReachableData() {
+        const res = {};
+        for (const [name, dataMapList] of this.#reachables) {
+            res[name] = [];
+            for (const dataMap of dataMapList) {
+                res[name].push(dataMap.getAll());
+            }
+        }
+        return res;
+    }
+
+    reset() {
+        this.#reachables.clear();
     }
 
     get size() {

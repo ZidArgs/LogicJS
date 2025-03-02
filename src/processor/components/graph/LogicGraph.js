@@ -36,16 +36,16 @@ export default class LogicGraph extends EventTarget {
             console.time(LOG_LOAD);
         }
 
-        for (const name in config) {
-            const children = config[name];
-            const sourceNode = this.#nodeFactory.getOrCreateNode(name);
-            for (const child in children) {
-                const edge = children[child];
-                const logic = edge.logic;
-                const data = edge.data;
+        for (const sourceName in config) {
+            const edgeConfig = config[sourceName];
+            const sourceNode = this.#nodeFactory.getOrCreateNode(sourceName);
+            for (const targetName in edgeConfig) {
+                const targetEdge = edgeConfig[targetName];
+                const logic = targetEdge.logic;
+                const dataMutation = targetEdge.dataMutation;
 
-                const targetNode = this.#nodeFactory.getOrCreateNode(child);
-                this.#createEdge(sourceNode, targetNode, logic, data);
+                const targetNode = this.#nodeFactory.getOrCreateNode(targetName);
+                this.#createEdge(sourceNode, targetNode, logic, dataMutation);
             }
         }
 
@@ -54,7 +54,7 @@ export default class LogicGraph extends EventTarget {
         }
     }
 
-    setEdge(sourceName, targetName, logic, data) {
+    setEdge(sourceName, targetName, logic, dataMutation) {
         if (DebugOptions.has(DebugValues.LOGIC_CHANGES)) {
             console.time(LOG_ADD_EDGE);
         }
@@ -64,7 +64,7 @@ export default class LogicGraph extends EventTarget {
         if (logic == null) {
             sourceNode.remove(targetNode);
         } else {
-            this.#createEdge(sourceNode, targetNode, logic, data);
+            this.#createEdge(sourceNode, targetNode, logic, dataMutation);
         }
 
         if (DebugOptions.has(DebugValues.LOGIC_CHANGES)) {
@@ -98,13 +98,9 @@ export default class LogicGraph extends EventTarget {
         return res;
     }
 
-    #createEdge(sourceNode, targetNode, logic, data) {
-        const dataFns = {};
-        for (const key in data) {
-            dataFns[key] = StatementCompiler.compile(data[key]);
-        }
+    #createEdge(sourceNode, targetNode, logic, dataMutation) {
         const fn = StatementCompiler.compile(logic);
-        sourceNode.append(targetNode, fn, dataFns);
+        sourceNode.append(targetNode, fn, dataMutation);
     }
 
 }

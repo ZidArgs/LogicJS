@@ -2,11 +2,17 @@ import DataMap from "../../data/DataMap.js";
 
 export default class TraverseDataHandler {
 
-    static #defaultUpdateDeterminationFunction(targetDataList, compareData) {
+    // traverseDataMapForcedReachableData
+
+    static #defaultGetForcedReachableDataFunction() {
+        return [new DataMap()];
+    }
+
+    static #defaultHasDataFunction(targetDataList, compareData) {
         return targetDataList.some((targetData) => !targetData.equals(compareData));
     }
 
-    static #defaultUpdateFunction(targetDataList, compareData) {
+    static #defaultUpdateDataFunction(targetDataList, compareData) {
         if (targetDataList.length) {
             const targetData = targetDataList[0];
             for (const [key, value] of compareData) {
@@ -18,33 +24,47 @@ export default class TraverseDataHandler {
         return targetDataList.some((targetData) => !targetData.equals(compareData));
     }
 
-    #updateDeteminationFunction = TraverseDataHandler.#defaultUpdateDeterminationFunction;
+    #getForcedReachableDataFunction = TraverseDataHandler.#defaultGetForcedReachableDataFunction;
 
-    #updateFunction = TraverseDataHandler.#defaultUpdateFunction;
+    #hasDataFunction = TraverseDataHandler.#defaultHasDataFunction;
 
-    setUpdateDeterminationFunction(updateDeteminationFunction) {
-        if (updateDeteminationFunction != null && typeof updateDeteminationFunction !== "function") {
-            this.#updateDeteminationFunction = TraverseDataHandler.#defaultUpdateDeterminationFunction;
+    #updateDataFunction = TraverseDataHandler.#defaultUpdateDataFunction;
+
+    setGetForcedReachableDataFunction(getForcedReachableDataFunction) {
+        if (getForcedReachableDataFunction != null && typeof hasDataFunction !== "function") {
+            this.#getForcedReachableDataFunction = TraverseDataHandler.#defaultGetForcedReachableDataFunction;
         } else {
-            this.#updateDeteminationFunction = updateDeteminationFunction;
+            this.#getForcedReachableDataFunction = getForcedReachableDataFunction;
         }
     }
 
-    determineNeedsUpdate(targetDataList, compareData) {
+    getForcedReachableData() {
+        return this.#getForcedReachableDataFunction();
+    }
+
+    setHasDataFunction(hasDataFunction) {
+        if (hasDataFunction != null && typeof hasDataFunction !== "function") {
+            this.#hasDataFunction = TraverseDataHandler.#defaultHasDataFunction;
+        } else {
+            this.#hasDataFunction = hasDataFunction;
+        }
+    }
+
+    hasData(targetDataList, compareData) {
         if (!Array.isArray(targetDataList) || targetDataList.some((targetData) => !(targetData instanceof DataMap))) {
             throw new TypeError("targetDataList must be an array of DataMap");
         }
         if (!(compareData instanceof DataMap)) {
             throw new TypeError("compareData must be an instance of DataMap");
         }
-        return this.#updateDeteminationFunction(targetDataList, compareData);
+        return this.#hasDataFunction(targetDataList, compareData);
     }
 
-    setUpdateFunction(updateFunction) {
-        if (updateFunction != null && typeof updateFunction !== "function") {
-            this.#updateFunction = TraverseDataHandler.#defaultUpdateFunction;
+    setUpdateDataFunction(updateDataFunction) {
+        if (updateDataFunction != null && typeof updateDataFunction !== "function") {
+            this.#updateDataFunction = TraverseDataHandler.#defaultUpdateDataFunction;
         } else {
-            this.#updateFunction = updateFunction;
+            this.#updateDataFunction = updateDataFunction;
         }
     }
 
@@ -55,7 +75,7 @@ export default class TraverseDataHandler {
         if (!(compareData instanceof DataMap)) {
             throw new TypeError("compareData must be an instance of DataMap");
         }
-        return this.#updateFunction(targetDataList, compareData);
+        return this.#updateDataFunction(targetDataList, compareData);
     }
 
 }

@@ -9,7 +9,7 @@ export default class LogicStatement extends Function {
     #source;
 
     constructor(statement, {dependencies = [], params = {}, source = {}}) {
-        super("val", "data", "exec", "params = {}", `return ${statement}`);
+        super(LogicStatement.parameterString, `return ${statement}`);
 
         this.#source = structuredClone(source);
         if (Symbol.iterator in Object(dependencies)) {
@@ -40,6 +40,17 @@ export default class LogicStatement extends Function {
         return this.#params[name];
     }
 
+    serialize() {
+        return {
+            logic: this.source,
+            params: this.params
+        };
+    }
+
+    static get parameterString() {
+        return "{val = () => false, data = () => false, exec = () => false, at = () => false, params = {}} = {}";
+    }
+
     static parseParams(params) {
         if (typeof params == "object" && params != null) {
             if (Array.isArray(params)) {
@@ -58,13 +69,6 @@ export default class LogicStatement extends Function {
             }
         }
         return {};
-    }
-
-    serialize() {
-        return {
-            logic: this.source,
-            params: this.params
-        };
     }
 
 }

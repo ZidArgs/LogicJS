@@ -8,7 +8,7 @@ const TRANSPILERS = {
     "number":   (logic) => `${escapeNumber(logic.value)}`,
     "value":    (logic) => `(val(${escapeString(logic.ref)})??0)`,
     "state":    (logic) => `((val(${escapeString(logic.ref)})??0)==${escapeValue(logic.value)})`,
-    "param":    (logic) => `(params[${toNumber(logic.ref)}]??0)`,
+    "param":    (logic) => `(params[${escapeString(logic.ref)}]??0)`,
     "data":     (logic) => `(data(${escapeString(logic.ref)})??0)`,
 
     /* operators */
@@ -45,7 +45,7 @@ const TRANSPILERS = {
     "function":    (logic) => `exec(${escapeString(logic.ref)}${functionParams(logic.params)})`,
 
     /* referrer */
-    "at":       (logic) => logic.content ? `((val(${escapeString(logic.node)})??0)&&${buildLogic(logic.content)})` : `(val(${escapeString(logic.node)})??0)`
+    "at":       (logic) => logic.content ? `at(${escapeString(logic.node)},(${LogicStatement.parameterString})=>${buildLogic(logic.content)})` : `at(${escapeString(logic.node)})`
 };
 
 const dependencies = new Set();

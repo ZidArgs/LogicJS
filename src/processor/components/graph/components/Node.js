@@ -5,12 +5,12 @@ export default class Node extends AbstractNode {
 
     #edges = new Map();
 
-    append(node, logic, transformData) {
+    append(node, logic, dataMutation) {
         if (!(node instanceof AbstractNode)) {
             throw new TypeError("node must be an instance of AbstractNode");
         }
         const newEdge = !this.#edges.has(node.name);
-        this.#edges.set(node.name, new Edge(this, node, logic, transformData));
+        this.#edges.set(node.name, new Edge(this, node, logic, dataMutation));
         if (newEdge) {
             const event = new Event("edge_added");
             event.sourceNode = this;
