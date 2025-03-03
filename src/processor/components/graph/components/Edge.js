@@ -14,7 +14,7 @@ export default class Edge {
 
     #dataMutation;
 
-    constructor(source, target, logic, dataMutation) {
+    constructor(source, target, logic, dataMutation = {}) {
         if (!(source instanceof AbstractNode)) {
             throw new TypeError("source must be an instance of AbstractNode");
         }
@@ -23,6 +23,9 @@ export default class Edge {
         }
         if (!(logic instanceof LogicStatement)) {
             throw new TypeError("logic must be a ProcessorStatement");
+        }
+        if (dataMutation == null || typeof dataMutation !== "object" || Array.isArray(dataMutation)) {
+            throw new TypeError("dataMutation must be a dict");
         }
         this.#source = source;
         this.#target = target;

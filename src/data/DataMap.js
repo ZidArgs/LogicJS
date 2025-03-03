@@ -41,7 +41,7 @@ export default class DataMap {
     constructor(data) {
         if (typeof data === "object" && data != null) {
             if (Symbol.iterator in Object(data)) {
-                for (const [key, value] of data[Symbol.iterator]) {
+                for (const [key, value] of data) {
                     this.set(key, value);
                 }
             } else {

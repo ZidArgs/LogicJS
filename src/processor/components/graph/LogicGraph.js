@@ -88,6 +88,10 @@ export default class LogicGraph extends EventTarget {
         return this.#nodeFactory.getAllTargetedNodes();
     }
 
+    getAllLeafNodes() {
+        return this.#nodeFactory.getAllLeafNodes();
+    }
+
     serialize() {
         const res = {};
         for (const node of this.getAllNodes()) {

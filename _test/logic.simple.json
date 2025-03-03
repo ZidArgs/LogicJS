@@ -1,0 +1,84 @@
+{
+    "edges": {
+        "root": {
+            "A": {
+                "logic": {
+                    "type": "or",
+                    "content": [
+                        {
+                            "type": "value",
+                            "ref": "test_1"
+                        },
+                        {
+                            "type": "value",
+                            "ref": "test_2"
+                        },
+                        {
+                            "type": "function",
+                            "ref": "function.barfoo",
+                            "params": {
+                                "input": true
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "A": {
+            "B": {
+                "logic": {
+                    "type": "at",
+                    "node": "C",
+                    "content": {
+                        "type": "true"
+                    }
+                }
+            },
+            "C": {
+                "logic": {
+                    "type": "value",
+                    "ref": "test_3"
+                }
+            },
+            "D": {
+                "logic": {
+                    "type": "function",
+                    "ref": "function.foobar",
+                    "params": {
+                        "test": true
+                    }
+                }
+            }
+        }
+    },
+    "functions": {
+        "function.foobar": {
+            "params": {},
+            "logic": {
+                "type": "at",
+                "node": "B",
+                "content": {
+                    "type": "true"
+                }
+            }
+        },
+        "function.barfoo": {
+            "params": {
+                "input": false
+            },
+            "logic": {
+                "type": "param",
+                "ref": "input"
+            }
+        },
+        "function.boofar": {
+            "params": {
+                "input": true
+            },
+            "logic": {
+                "type": "param",
+                "ref": "input"
+            }
+        }
+    }
+}

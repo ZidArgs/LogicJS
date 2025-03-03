@@ -1,4 +1,4 @@
-import DataMap from "../../src/data/DataMap.js";
+import DataMap from "/LogicJS/data/DataMap.js";
 
 export function traverseDataMapForcedReachableData() {
     const res = [];

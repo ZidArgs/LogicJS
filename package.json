@@ -10,7 +10,9 @@
   "author": "Denis Weiß (ZidArgs)",
   "license": "MIT",
   "homepage": "https://bitbucket.org/zidargs/logicjs/src",
-  "dependencies": {},
+  "dependencies": {
+    "jswebservice": "git+https://bitbucket.org/zidargs/jswebservice.git/#2.1.4"
+  },
   "devDependencies": {
     "@babel/core": "^7.16.10",
     "@babel/eslint-parser": "^7.16.5",
@@ -23,7 +25,7 @@
   "scripts": {
     "lint": "yarn eslint .",
     "lintfix": "yarn eslint --fix .",
-    "test": "serve . -p 12000",
+    "test": "node server.js",
     "convert": "node _demo/converter.js"
   }
 }

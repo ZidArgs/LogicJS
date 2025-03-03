@@ -9,7 +9,6 @@ const LOG_SET_MEMORY_IN = "GRAPH LOGIC INPUT MEMORY SET";
 const LOG_CLEAR_MEMORY_FULL = "GRAPH LOGIC FULL MEMORY RESET";
 const LOG_CLEAR_MEMORY_OUT = "GRAPH LOGIC OUTPUT MEMORY RESET";
 
-// TODO add execution
 export default class LogicProcessor {
 
     #program = new LogicProgram();
@@ -90,7 +89,7 @@ export default class LogicProcessor {
                     this.#memIn.set(key, value);
                 }
             } else {
-                for (const [key, value] of Object.entries(value)) {
+                for (const [key, value] of Object.entries(values)) {
                     if (DebugOptions.has(DebugValues.MEMORY_CHANGES)) {
                         console.log(key, value);
                     }

@@ -41,7 +41,7 @@ export default class LogicProgram extends EventTarget {
         this.#buildFunctions(config.functions);
 
         if (DebugOptions.has(DebugValues.LOGIC_CHANGES)) {
-            console.groupCollapsed(LOG_GROUP_LOAD_LOGIC);
+            console.groupEnd(LOG_GROUP_LOAD_LOGIC);
         }
     }
 
@@ -63,6 +63,10 @@ export default class LogicProgram extends EventTarget {
 
     getAllTargetedNodes() {
         return this.#graph.getAllTargetedNodes();
+    }
+
+    getAllLeafNodes() {
+        return this.#graph.getAllLeafNodes();
     }
 
     setFunction(name, logic, params = {}) {

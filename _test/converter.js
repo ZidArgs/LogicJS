@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 
-import TreeLogic from "../src/generator/TreeLogic.js";
+import TreeLogic from "/LogicJS/generator/TreeLogic.js";
 
 const __dirname = path.resolve();
 

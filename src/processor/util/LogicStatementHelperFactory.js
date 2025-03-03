@@ -29,9 +29,13 @@ export default class LogicStatementHelperFactory {
 
     createTraverseAndMemoryValueGetter() {
         const allTargetNodes = this.#program.getAllTargetedNodes();
+        const allTargetNodeNames = new Set();
+        for (const node of allTargetNodes) {
+            allTargetNodeNames.add(node.name);
+        }
 
         return (key) => {
-            if (allTargetNodes.has(key)) {
+            if (allTargetNodeNames.has(key)) {
                 return +this.#traverseDataMap.has(key);
             } else if (this.#memIn.has(key)) {
                 return this.#memIn.get(key);
@@ -51,7 +55,7 @@ export default class LogicStatementHelperFactory {
                 return logicFn({
                     val: getValue,
                     data: getData,
-                    exec: this.createLogicStatementExecutor(dataMap, getValue, getData, atResolver),
+                    exec: this.createLogicStatementExecutor(getValue, getData),
                     at: atResolver,
                     params
                 });
@@ -60,8 +64,8 @@ export default class LogicStatementHelperFactory {
         return atResolver;
     }
 
-    createLogicStatementExecutor(getValue, getData, atResolver) {
-        const exec = (name, ...params) => {
+    createLogicStatementExecutor(getValue, getData) {
+        const exec = (name, params = {}) => {
             const fn = this.#program.getFunction(name);
             if (fn != null) {
                 const defParams = fn.params;
@@ -73,11 +77,13 @@ export default class LogicStatementHelperFactory {
                 }
 
                 if (DebugOptions.has(DebugValues.TRAVERSE_GRAPH)) {
-                    console.groupCollapsed(`execute mixin { ${name} }`);
+                    console.groupCollapsed(`execute function { ${name} }`);
                     console.log(fn.toString());
                     console.log("default parameters: ", defParams);
                     console.log("call parameters: ", params);
                 }
+
+                const atResolver = this.createAtResolver(getValue, params);
 
                 const res = fn({
                     val: getValue,
@@ -89,7 +95,7 @@ export default class LogicStatementHelperFactory {
 
                 if (DebugOptions.has(DebugValues.TRAVERSE_GRAPH)) {
                     console.log(`result: ${res}`);
-                    console.groupEnd(`execute mixin { ${name} }`);
+                    console.groupEnd(`execute function { ${name} }`);
                 }
                 return res;
             }

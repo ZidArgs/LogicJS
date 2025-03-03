@@ -1,78 +1,47 @@
-
-import NodeFactory from "../util/NodeFactory.js";
-import EdgeCompiler from "../compiler/EdgeCompiler.js";
-import FunctionCompiler from "../compiler/FunctionCompiler.js";
-import TraverseDataMap from "../../_old/processor/components/TraverseDataMap.js"; // XXX
 import DataMap from "../data/DataMap.js";
+import TraverseDataMap from "../processor/data/TraverseDataMap.js";
+import LogicProgram from "../processor/components/LogicProgram.js";
+import LogicStatementHelperFactory from "../processor/util/LogicStatementHelperFactory.js";
 
 export default class LogicTester {
 
-    #nodeFactory = new NodeFactory();
-
-    #logicFunctions = new Map();
-
-    #logicFunctionParams = new Map();
+    #program = new LogicProgram();
 
     #memIn = new Map();
 
-    #memOut = new Map(); // XXX is this needed?
+    #traverseDataMap = new TraverseDataMap();
 
-    clearLogic() {
-        this.#nodeFactory.reset();
-        this.#logicFunctions.clear();
-        this.#logicFunctionParams.clear();
+    #logicStatementHelperFactory = new LogicStatementHelperFactory(this.#program, this.#memIn, this.#traverseDataMap);
+
+    reset() {
+        this.#program.clear();
         this.#memIn.clear();
-        this.#memOut.clear();
     }
 
-    loadLogic(config) {
-        for (const name in config.edges) {
-            const children = config.edges[name];
-            const node = this.#nodeFactory.get(name);
-            for (const child in children) {
-                const edge = children[child];
-                const logic = edge.logic;
-                const data = edge.data;
-                const dataFns = {};
-                for (const key in data) {
-                    dataFns[key] = EdgeCompiler.compile(data[key]);
+    resetMemory() {
+        this.#memIn.clear();
+    }
+
+    get program() {
+        return this.#program;
+    }
+
+    setInput(key, value) {
+        this.#memIn.set(key, value);
+    }
+
+    setAllInput(values) {
+        if (typeof values === "object" && values != null) {
+            if (Symbol.iterator in Object(values)) {
+                for (const [key, value] of value[Symbol.iterator]) {
+                    this.#memIn.set(key, value);
                 }
-                const fn = EdgeCompiler.compile(logic);
-                node.append(this.#nodeFactory.get(child), fn, dataFns);
-                if (!this.#memOut.has(child)) {
-                    this.#memOut.set(child, false);
+            } else {
+                for (const [key, value] of Object.entries(value)) {
+                    this.#memIn.set(key, value);
                 }
             }
         }
-        for (const name in config.mixins) {
-            const mixin = config.mixins[name];
-            const logic = mixin.logic;
-            const params = mixin.params;
-            const fn = FunctionCompiler.compile(logic);
-            this.#logicFunctions.set(name, fn);
-            this.#logicFunctionParams.set(name, params ?? []);
-        }
-    }
-
-    setAll(values) {
-        if (values instanceof Map) {
-            for (const [k, v] of values) {
-                this.#memIn.set(k, v);
-            }
-        } else if (typeof values == "object" && !Array.isArray(values)) {
-            for (const k in values) {
-                const v = values[k];
-                this.#memIn.set(k, v);
-            }
-        }
-    }
-
-    getFunctions() {
-        const res = [];
-        for (const [name] of this.#logicFunctions) {
-            res.push(name);
-        }
-        return res;
     }
 
     testLogic(startData = {}) {
@@ -84,58 +53,45 @@ export default class LogicTester {
 
     /* all edges */
     #executeEdges(startData) {
-        const allTargets = this.#nodeFactory.getAllTargetedNodes();
-        const traversedDataMap = new TraverseDataMap();
-        const queue = this.#nodeFactory.getAllEdges();
+        const allTargetNodes = this.#program.getAllTargetedNodes();
+        const allTargetNodeNames = new Set();
+        for (const node of allTargetNodes) {
+            allTargetNodeNames.add(node.name);
+        }
+
+        this.#traverseDataMap.reset();
+
+        const getValue = this.#logicStatementHelperFactory.createTraverseAndMemoryValueGetter();
+
+        const queue = this.#program.getAllEdges();
         const success = new Set();
         const failed = new Set();
-        const executionData = new DataMap(startData);
-
-        const getValue =  (key) => {
-            if (allTargets.has(key)) {
-                return +traversedDataMap.has(key);
-            } else if (this.#memIn.has(key)) {
-                return this.#memIn.get(key);
-            }
-            return 0;
-        };
-
-        const getData = (wrapper) => {
-            return (name) => {
-                return wrapper.getData(name);
-            };
-        };
-
-        const execute = (executionData) => {
-            return (name, ...params) => {
-                if (this.#logicFunctions.has(name)) {
-                    const fn = this.#logicFunctions.get(name);
-                    const defParams = this.#logicFunctionParams.get(name);
-                    for (const i in defParams) {
-                        if (typeof params[i] == "undefined") {
-                            params[i] = defParams[i];
-                        }
-                    }
-                    const res = fn(getValue, getData(executionData), execute(executionData), params);
-                    return res;
-                }
-                return 0;
-            };
-        };
+        const dataMap = new DataMap(startData);
 
         let changed = true;
         while (!!queue.length && !!changed) {
             changed = false;
-            let counts = queue.length;
-            while (counts--) {
+            let elementCount = queue.length;
+            while (elementCount--) {
                 const edge = queue.shift();
-                const fn = edge.getCondition();
-                const res = fn(getValue, getData(executionData), execute(executionData));
-                if (res) {
-                    success.add(edge.toString());
+                const condition = edge.logic;
+
+                const getData = LogicStatementHelperFactory.createDataMapValueGetter(dataMap);
+                const atResolver = this.#logicStatementHelperFactory.createAtResolver(getValue);
+                const execute = this.#logicStatementHelperFactory.createLogicStatementExecutor(getValue, getData);
+
+                const cRes = condition({
+                    val: getValue,
+                    data: getData,
+                    exec: execute,
+                    at: atResolver
+                });
+
+                if (cRes) {
                     changed = true;
                     const name = edge.getTarget().getName();
-                    traversedDataMap.setData(name, executionData);
+                    this.#traverseDataMap.setData(name, dataMap);
+                    success.add(edge.toString());
                 } else {
                     queue.push(edge);
                 }
@@ -149,48 +105,33 @@ export default class LogicTester {
         return {success, failed};
     }
 
-    /* all mixins */
+    /* all functions */
     #executeFunctions(startData) {
-        const allTargets = this.#nodeFactory.getAllTargetedNodes();
+        const allTargetNodes = this.#program.getAllTargetedNodes();
+        const allTargetNodeNames = new Set();
+        for (const node of allTargetNodes) {
+            allTargetNodeNames.add(node.name);
+        }
+
         const success = new Set();
         const failed = new Set();
 
-        const executionData = new DataMap(startData);
+        const dataMap = new DataMap(startData);
 
-        const getValue =  (key) => {
-            if (allTargets.has(key)) {
-                return 1;
-            } else if (this.#memIn.has(key)) {
-                return this.#memIn.get(key);
-            }
-            return 0;
-        };
+        const getValue = this.#logicStatementHelperFactory.createTraverseAndMemoryValueGetter();
 
-        const getData = (wrapper) => {
-            return (name) => {
-                return wrapper.getData(name);
-            };
-        };
+        const getData = LogicStatementHelperFactory.createDataMapValueGetter(dataMap);
+        const atResolver = this.#logicStatementHelperFactory.createAtResolver(getValue);
+        const execute = this.#logicStatementHelperFactory.createLogicStatementExecutor(getValue, getData);
 
-        const execute = (executionData) => {
-            return (name, ...params) => {
-                if (this.#logicFunctions.has(name)) {
-                    const fn = this.#logicFunctions.get(name);
-                    const defParams = this.#logicFunctionParams.get(name);
-                    for (const i in defParams) {
-                        if (typeof params[i] == "undefined") {
-                            params[i] = defParams[i];
-                        }
-                    }
-                    const res = fn(getValue, getData(executionData), execute(executionData), params);
-                    return res;
-                }
-                return 0;
-            };
-        };
+        for (const [name, fn] of this.#program.getAllFunctions()) {
+            const res = fn({
+                val: getValue,
+                data: getData,
+                exec: execute,
+                at: atResolver
+            });
 
-        for (const [name, fn] of this.#logicFunctions) {
-            const res = fn(getValue, getData(executionData), execute(executionData));
             if (res) {
                 success.add(name);
             } else {

@@ -115,26 +115,26 @@ function mathMultiElementOperation(els, join) {
 }
 
 /* FUNCTION PARAMS */
-function escapeParam(val) {
-    if (typeof val == "boolean") {
-        return val;
+function functionParams(params) {
+    if (params == null || typeof params !== "object" || Array.isArray(params)) {
+        return ",{}";
     }
-    if (typeof val == "number") {
-        if (!isNaN(val)) {
-            return val;
+    const escapedParams = [];
+    for (const [key, value] of Object.entries(params)) {
+        if (typeof value == "boolean") {
+            escapedParams.push(`${key}: ${value}`);
         }
-        return 0;
+        if (typeof value == "number") {
+            if (!isNaN(value)) {
+                escapedParams.push(`${key}: ${value}`);
+            }
+            escapedParams.push(`${key}: 0`);
+        }
+        if (typeof value == "string") {
+            escapedParams.push(value.replace(/[\\"]/g, "\\$&"));
+        }
     }
-    if (typeof val == "string") {
-        return val.replace(/[\\"]/g, "\\$&");
-    }
-}
-
-function functionParams(els) {
-    if (els == null || els.length == 0) {
-        return "";
-    }
-    return `,"${els.map(escapeParam).join(",")}"`;
+    return `,{${escapedParams.join(",")}}`;
 }
 
 /* INITIATOR */

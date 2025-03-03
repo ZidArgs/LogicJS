@@ -23,7 +23,7 @@ export default class LogicGraphExecutor {
 
     #traverseDataMap = new TraverseDataMap();
 
-    #logicStatementHelperFactory = new LogicStatementHelperFactory(this.#program, this.#memIn, this.#traverseDataMap);
+    #logicStatementHelperFactory;
 
     constructor(program, memIn, memOut, redirects, forcedReachable) {
         if (!(program instanceof LogicProgram)) {
@@ -46,6 +46,8 @@ export default class LogicGraphExecutor {
         this.#memOut = memOut;
         this.#redirects = redirects;
         this.#forcedReachable = forcedReachable;
+
+        this.#logicStatementHelperFactory = new LogicStatementHelperFactory(this.#program, this.#memIn, this.#traverseDataMap);
     }
 
     execute(startNodeName, startData) {
@@ -62,7 +64,6 @@ export default class LogicGraphExecutor {
 
         if (DebugOptions.has(DebugValues.EXECUTE_LOGIC) || DebugOptions.has(DebugValues.TRAVERSE_GRAPH)) {
             console.groupCollapsed(LOG_EXECUTE_LOGIC);
-            console.groupCollapsed("GRAPH LOGIC EXECUTION");
             console.time("data collection time");
         }
 
@@ -120,30 +121,37 @@ export default class LogicGraphExecutor {
                 const sourceNode = edge.source;
                 const targetNode = edge.target;
                 const condition = edge.logic;
+
                 if (DebugOptions.has(DebugValues.TRAVERSE_GRAPH)) {
                     console.groupCollapsed(`traverse edge { ${edge} }`);
                     console.log(condition.toString());
                 }
+
                 const getData = LogicStatementHelperFactory.createDataMapValueGetter(dataMap);
                 const atResolver = this.#logicStatementHelperFactory.createAtResolver(getValue);
-                const execute = this.#logicStatementHelperFactory.createLogicStatementExecutor(dataMap, getValue, getData, atResolver);
+                const execute = this.#logicStatementHelperFactory.createLogicStatementExecutor(getValue, getData);
+
                 const cRes = condition({
                     val: getValue,
                     data: getData,
                     exec: execute,
                     at: atResolver
                 });
+
                 if (DebugOptions.has(DebugValues.TRAVERSE_GRAPH)) {
                     console.log(`result: ${cRes}`);
                 }
+
                 if (cRes) {
                     changed = true;
                     const name = this.#redirects.get(sourceNode.name, targetNode.name);
+
                     if (DebugOptions.has(DebugValues.TRAVERSE_GRAPH)) {
                         if (name != targetNode.name) {
                             console.log(`redirecting edge { ${edge} } to point to { ${name} }`);
                         }
                     }
+
                     if (name != "") {
                         const resultDataMap = queueEntry.mutatedDataMap;
                         const node = this.#program.getNode(name);
@@ -153,10 +161,11 @@ export default class LogicGraphExecutor {
                             const childSourceNode = childEdge.source;
                             const childTargetNode = childEdge.target;
                             const chName = this.#redirects.get(childSourceNode.name, childTargetNode.name);
-                            const newQueueEntry = new LogicTraversionQueueEntry(edge, resultDataMap);
+                            const newQueueEntry = new LogicTraversionQueueEntry(childEdge, resultDataMap);
                             const newEntryDataMap = newQueueEntry.mutatedDataMap;
                             if (!this.#traverseDataMap.has(chName, newEntryDataMap)) {
                                 queue.push(newQueueEntry);
+
                                 if (DebugOptions.has(DebugValues.TRAVERSE_GRAPH)) {
                                     console.log(`queue edge { ${childEdge} } with data`, resultDataMap.getAll());
                                 }
@@ -165,16 +174,19 @@ export default class LogicGraphExecutor {
                     }
                 } else {
                     queue.push(queueEntry);
+
                     if (DebugOptions.has(DebugValues.TRAVERSE_GRAPH)) {
                         console.log(`requeue edge { ${edge} } with data`, dataMap.getAll());
                     }
                 }
+
                 if (DebugOptions.has(DebugValues.TRAVERSE_GRAPH)) {
                     console.groupEnd(`traverse edge { ${edge} }`);
                     if (reachableCount != this.#traverseDataMap.size) {
                         console.log("reachable changed", this.#traverseDataMap.getAllReachableData());
                     }
                 }
+
                 reachableCount = this.#traverseDataMap.size;
             }
         }
