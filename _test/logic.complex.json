@@ -1,0 +1,330 @@
+{
+    "edges": {
+        "root": {
+            "root_exits": {
+                "logic": {
+                    "type": "or",
+                    "content": [
+                        {
+                            "type": "function",
+                            "ref": "isStartState",
+                            "params": {}
+                        },
+                        {
+                            "type": "value",
+                            "ref": "state_switch"
+                        }
+                    ]
+                }
+            }
+        },
+        "root_exits": {
+            "a_start": {
+                "logic": {
+                    "type": "function",
+                    "ref": "state_a",
+                    "params": {}
+                }
+            },
+            "b_start": {
+                "logic": {
+                    "type": "function",
+                    "ref": "state_b",
+                    "params": {}
+                }
+            }
+        },
+        "state_switch": {
+            "state_switch_a": {
+                "logic": {
+                    "type": "function",
+                    "ref": "state_a",
+                    "params": {}
+                },
+                "dataMutation": {
+                    "state": "b"
+                }
+            },
+            "state_switch_b": {
+                "logic": {
+                    "type": "function",
+                    "ref": "state_b",
+                    "params": {}
+                },
+                "dataMutation": {
+                    "state": "a"
+                }
+            }
+        },
+        "state_switch_a": {
+            "root_exits": {
+                "logic": {
+                    "type": "true"
+                }
+            }
+        },
+        "state_switch_b": {
+            "root_exits": {
+                "logic": {
+                    "type": "true"
+                }
+            }
+        },
+        "a_start": {
+            "A": {
+                "logic": {
+                    "type": "true"
+                }
+            }
+        },
+        "b_start": {
+            "B": {
+                "logic": {
+                    "type": "true"
+                }
+            }
+        },
+        "A": {
+            "C": {
+                "logic": {
+                    "type": "true"
+                },
+                "dataMutation": {
+                    "a": true,
+                    "b": true,
+                    "c": true
+                }
+            },
+            "A.A": {
+                "logic": {
+                    "type": "function",
+                    "ref": "canUse",
+                    "params": {
+                        "item": {
+                            "type": "string",
+                            "value": "item[foobar]"
+                        }
+                    }
+                }
+            },
+            "A.B": {
+                "logic": {
+                    "type": "and",
+                    "content": [
+                        {
+                            "type": "data",
+                            "ref": "b"
+                        },
+                        {
+                            "type": "function",
+                            "ref": "canUse",
+                            "params": {
+                                "item": {
+                                    "type": "string",
+                                    "value": "item[foobar]"
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "A.C": {
+                "logic": {
+                    "type": "and",
+                    "content": [
+                        {
+                            "type": "or",
+                            "content": [
+                                {
+                                    "type": "function",
+                                    "ref": "canUse",
+                                    "params": {
+                                        "item": {
+                                            "type": "string",
+                                            "value": "item[farboo]"
+                                        }
+                                    }
+                                },
+                                {
+                                    "type": "function",
+                                    "ref": "canUse",
+                                    "params": {
+                                        "item": {
+                                            "type": "string",
+                                            "value": "item[barfoo]"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        "B": {
+            "state_switch": {
+                "logic": {
+                    "type": "true"
+                }
+            },
+            "C": {
+                "logic": {
+                    "type": "true"
+                },
+                "dataMutation": {
+                    "a": true,
+                    "b": true,
+                    "c": true
+                }
+            }
+        },
+        "C": {
+            "B": {
+                "logic": {
+                    "type": "true"
+                }
+            },
+            "A": {
+                "logic": {
+                    "type": "true"
+                }
+            }
+        }
+    },
+    "functions": {
+        "state_a": {
+            "params": {},
+            "logic": {
+                "type": "eq",
+                "content": [
+                    {
+                        "type": "data",
+                        "ref": "state"
+                    },
+                    {
+                        "type": "string",
+                        "value": "a"
+                    }
+                ]
+            }
+        },
+        "state_b": {
+            "params": {},
+            "logic": {
+                "type": "eq",
+                "content": [
+                    {
+                        "type": "data",
+                        "ref": "state"
+                    },
+                    {
+                        "type": "string",
+                        "value": "b"
+                    }
+                ]
+            }
+        },
+        "isStartState": {
+            "params": {},
+            "logic": {
+                "type": "eq",
+                "content": [
+                    {
+                        "type": "data",
+                        "ref": "state"
+                    },
+                    {
+                        "type": "value",
+                        "ref": "option[start_state]"
+                    }
+                ]
+            }
+        },
+        "canUse": {
+            "params": {
+                "item": ""
+            },
+            "logic": {
+                "type": "or",
+                "content": [
+                    {
+                        "type": "and",
+                        "content": [
+                            {
+                                "type": "eq",
+                                "content": [
+                                    {
+                                        "type": "param",
+                                        "ref": "item"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "value": "item[foobar]"
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "value",
+                                "ref": "item[foobar]"
+                            }
+                        ]
+                    },
+                    {
+                        "type": "and",
+                        "content": [
+                            {
+                                "type": "eq",
+                                "content": [
+                                    {
+                                        "type": "param",
+                                        "ref": "item"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "value": "item[farboo]"
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "value",
+                                "ref": "item[farboo]"
+                            },
+                            {
+                                "type": "function",
+                                "ref": "state_a",
+                                "params": {}
+                            }
+                        ]
+                    },
+                    {
+                        "type": "and",
+                        "content": [
+                            {
+                                "type": "eq",
+                                "content": [
+                                    {
+                                        "type": "param",
+                                        "ref": "item"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "value": "item[barfoo]"
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "value",
+                                "ref": "item[barfoo]"
+                            },
+                            {
+                                "type": "function",
+                                "ref": "state_b",
+                                "params": {}
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

@@ -3,7 +3,7 @@
         "root": {
             "A": {
                 "logic": {
-                    "type": "or",
+                    "type": "and",
                     "content": [
                         {
                             "type": "value",
@@ -16,9 +16,7 @@
                         {
                             "type": "function",
                             "ref": "function.barfoo",
-                            "params": {
-                                "input": true
-                            }
+                            "params": {}
                         }
                     ]
                 }
@@ -53,22 +51,42 @@
     },
     "functions": {
         "function.foobar": {
-            "params": {},
+            "params": {
+                "test": false
+            },
             "logic": {
-                "type": "at",
-                "node": "B",
-                "content": {
-                    "type": "true"
-                }
+                "type": "and",
+                "content": [
+                    {
+                        "type": "at",
+                        "node": "B",
+                        "content": {
+                            "type": "true"
+                        }
+                    },
+                    {
+                        "type": "param",
+                        "ref": "input"
+                    }
+                ]
             }
         },
         "function.barfoo": {
             "params": {
-                "input": false
+                "input": "test"
             },
             "logic": {
-                "type": "param",
-                "ref": "input"
+                "type": "eq",
+                "content": [
+                    {
+                        "type": "param",
+                        "ref": "input"
+                    },
+                    {
+                        "type": "string",
+                        "value": "test"
+                    }
+                ]
             }
         },
         "function.boofar": {

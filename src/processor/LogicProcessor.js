@@ -41,8 +41,9 @@ export default class LogicProcessor {
     }
 
     reset() {
-        this.#program.clear();
-        this.#redirects.clear();
+        this.program.clear();
+        this.redirects.clear();
+        this.traverseDataHandler.reset();
         this.#forcedReachable.clear();
         this.resetMemory();
         this.#dirty = false;
@@ -54,6 +55,10 @@ export default class LogicProcessor {
 
     get redirects() {
         return this.#redirects;
+    }
+
+    get traverseDataHandler() {
+        return this.#logicGraphExecutor.traverseDataMap.traverseDataHandler;
     }
 
     isDirty() {

@@ -24,7 +24,7 @@ export default class LogicTraversionQueueEntry {
             this.#dataMap = new DataMap();
             this.#mutatedDataMap = new DataMap();
         }
-        for (const [key, value] in Object.keys(edge.dataMutation)) {
+        for (const [key, value] of Object.entries(edge.dataMutation)) {
             this.#mutatedDataMap.set(key, value);
         }
     }

@@ -30,6 +30,12 @@ export default class TraverseDataHandler {
 
     #updateDataFunction = TraverseDataHandler.#defaultUpdateDataFunction;
 
+    reset() {
+        this.#getForcedReachableDataFunction = TraverseDataHandler.#defaultGetForcedReachableDataFunction;
+        this.#hasDataFunction = TraverseDataHandler.#defaultHasDataFunction;
+        this.#updateDataFunction = TraverseDataHandler.#defaultUpdateDataFunction;
+    }
+
     setGetForcedReachableDataFunction(getForcedReachableDataFunction) {
         if (getForcedReachableDataFunction != null && typeof hasDataFunction !== "function") {
             this.#getForcedReachableDataFunction = TraverseDataHandler.#defaultGetForcedReachableDataFunction;

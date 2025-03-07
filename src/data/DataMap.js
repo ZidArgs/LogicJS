@@ -88,6 +88,10 @@ export default class DataMap {
         return this.#data.delete(key);
     }
 
+    clear() {
+        this.#data.clear();
+    }
+
     values() {
         return this.#data.values();
     }

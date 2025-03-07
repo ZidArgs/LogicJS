@@ -28,7 +28,7 @@ export default class LogicGraph extends EventTarget {
         if (DebugOptions.has(DebugValues.LOGIC_CHANGES)) {
             console.log(LOG_CLEAR);
         }
-        this.#nodeFactory.reset();
+        this.#nodeFactory.clear();
     }
 
     load(config) {

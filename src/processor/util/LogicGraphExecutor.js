@@ -50,6 +50,10 @@ export default class LogicGraphExecutor {
         this.#logicStatementHelperFactory = new LogicStatementHelperFactory(this.#program, this.#memIn, this.#traverseDataMap);
     }
 
+    get traverseDataMap() {
+        return this.#traverseDataMap;
+    }
+
     execute(startNodeName, startData) {
         if (!(startData instanceof DataMap)) {
             throw new TypeError("startData must be an instance of DataMap");
@@ -123,7 +127,7 @@ export default class LogicGraphExecutor {
                 const condition = edge.logic;
 
                 if (DebugOptions.has(DebugValues.TRAVERSE_GRAPH)) {
-                    console.groupCollapsed(`traverse edge { ${edge} }`);
+                    console.groupCollapsed(`traverse edge { ${edge} } with data`, dataMap.getAll());
                     console.log(condition.toString());
                 }
 
@@ -167,8 +171,10 @@ export default class LogicGraphExecutor {
                                 queue.push(newQueueEntry);
 
                                 if (DebugOptions.has(DebugValues.TRAVERSE_GRAPH)) {
-                                    console.log(`queue edge { ${childEdge} } with data`, resultDataMap.getAll());
+                                    console.log(`queue edge { ${childEdge} } with data`, resultDataMap.getAll(), childEdge.dataMutation);
                                 }
+                            } else if (DebugOptions.has(DebugValues.TRAVERSE_GRAPH)) {
+                                console.log(`ignore edge { ${childEdge} } with data`, resultDataMap.getAll(), childEdge.dataMutation);
                             }
                         }
                     }
@@ -176,7 +182,7 @@ export default class LogicGraphExecutor {
                     queue.push(queueEntry);
 
                     if (DebugOptions.has(DebugValues.TRAVERSE_GRAPH)) {
-                        console.log(`requeue edge { ${edge} } with data`, dataMap.getAll());
+                        console.log(`requeue edge { ${edge} } with data`, dataMap.getAll(), edge.dataMutation);
                     }
                 }
 

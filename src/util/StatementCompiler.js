@@ -80,7 +80,7 @@ function escapeValue(str) {
 
 /* ELEMENTS */
 function twoElementOperation(els, join) {
-    return mathMultiElementOperation(els.slice(0, 2), join);
+    return multiElementOperation(els.slice(0, 2), join);
 }
 
 function multiElementOperation(els, join) {
@@ -121,18 +121,8 @@ function functionParams(params) {
     }
     const escapedParams = [];
     for (const [key, value] of Object.entries(params)) {
-        if (typeof value == "boolean") {
-            escapedParams.push(`${key}: ${value}`);
-        }
-        if (typeof value == "number") {
-            if (!isNaN(value)) {
-                escapedParams.push(`${key}: ${value}`);
-            }
-            escapedParams.push(`${key}: 0`);
-        }
-        if (typeof value == "string") {
-            escapedParams.push(value.replace(/[\\"]/g, "\\$&"));
-        }
+        const buildValue = buildLogic(value);
+        escapedParams.push(`${key}:${buildValue}`);
     }
     return `,{${escapedParams.join(",")}}`;
 }

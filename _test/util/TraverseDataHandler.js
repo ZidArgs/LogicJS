@@ -4,33 +4,33 @@ export function traverseDataMapForcedReachableData() {
     const res = [];
 
     const childData = new DataMap();
-    childData.set("era", "child");
-    childData.set("day", true);
-    childData.set("night", true);
-    childData.set("dampe", true);
+    childData.set("state", "a");
+    childData.set("a", true);
+    childData.set("b", true);
+    childData.set("c", true);
     res.push(childData);
 
     const adultData = new DataMap();
-    adultData.set("era", "adult");
-    adultData.set("day", true);
-    adultData.set("night", true);
-    adultData.set("dampe", true);
+    adultData.set("state", "b");
+    childData.set("a", true);
+    childData.set("b", true);
+    childData.set("c", true);
     res.push(adultData);
 
     return res;
 }
 
 export function traverseDataMapHasData(targetDataList, compareData) {
-    const compareDataEra = compareData.get("era");
+    const compareDataEra = compareData.get("state");
     for (const targetData of targetDataList) {
-        if (targetData.get("era") == compareDataEra) {
-            if (!targetData.get("day") && compareData.get("day")) {
+        if (targetData.get("state") == compareDataEra) {
+            if (!targetData.get("a") && compareData.get("a")) {
                 return false;
             }
-            if (!targetData.get("night") && compareData.get("night")) {
+            if (!targetData.get("b") && compareData.get("b")) {
                 return false;
             }
-            if (!targetData.get("dampe") && compareData.get("dampe")) {
+            if (!targetData.get("c") && compareData.get("c")) {
                 return false;
             }
             return true;
@@ -40,28 +40,28 @@ export function traverseDataMapHasData(targetDataList, compareData) {
 }
 
 export function traverseDataMapUpdateData(targetDataList, compareData) {
-    const compareDataEra = compareData.get("era");
+    const compareDataEra = compareData.get("state");
     let found = false;
     for (const targetData of targetDataList) {
-        if (targetData.get("era") == compareDataEra) {
+        if (targetData.get("state") == compareDataEra) {
             found = true;
-            if (compareData.get("day")) {
-                targetData.set("day", true);
+            if (compareData.get("a")) {
+                targetData.set("a", true);
             }
-            if (compareData.get("night")) {
-                targetData.set("night", true);
+            if (compareData.get("b")) {
+                targetData.set("b", true);
             }
-            if (compareData.get("dampe")) {
-                targetData.set("dampe", true);
+            if (compareData.get("c")) {
+                targetData.set("c", true);
             }
         }
     }
     if (!found) {
         const targetData = new DataMap();
-        targetData.set("era", compareData.get("era"));
-        targetData.set("day", !!compareData.get("day"));
-        targetData.set("night", !!compareData.get("night"));
-        targetData.set("dampe", !!compareData.get("dampe"));
+        targetData.set("state", compareData.get("state"));
+        targetData.set("a", !!compareData.get("a"));
+        targetData.set("b", !!compareData.get("b"));
+        targetData.set("c", !!compareData.get("c"));
         targetDataList.push(targetData);
     }
 }

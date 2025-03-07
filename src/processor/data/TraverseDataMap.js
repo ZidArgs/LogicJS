@@ -7,7 +7,7 @@ export default class TraverseDataMap {
 
     #reachables = new Map();
 
-    get dataHandler() {
+    get traverseDataHandler() {
         return this.#traverseDataHandler;
     }
 
