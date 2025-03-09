@@ -1,3 +1,6 @@
+import {
+    immute
+} from "../../../../data/Immutable.js";
 import LogicStatement from "../../LogicStatement.js";
 import AbstractNode from "./AbstractNode.js";
 
@@ -30,7 +33,7 @@ export default class Edge {
         this.#source = source;
         this.#target = target;
         this.#logic = logic;
-        this.#dataMutation = dataMutation;
+        this.#dataMutation = immute(dataMutation);
     }
 
     get source() {
@@ -51,7 +54,7 @@ export default class Edge {
 
     serialize() {
         return {
-            logic: this.#logic,
+            logic: this.#logic.serialize(),
             dataMutation: this.#dataMutation
         };
     }

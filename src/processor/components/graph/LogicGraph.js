@@ -102,7 +102,7 @@ export default class LogicGraph extends EventTarget {
         return res;
     }
 
-    #createEdge(sourceNode, targetNode, logic, dataMutation) {
+    #createEdge(sourceNode, targetNode, logic, dataMutation = {}) {
         const fn = StatementCompiler.compile(logic);
         sourceNode.append(targetNode, fn, dataMutation);
     }

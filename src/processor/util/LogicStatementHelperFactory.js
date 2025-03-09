@@ -2,6 +2,7 @@ import DataMap from "../../data/DataMap.js";
 import DebugValues from "../../enum/DebugValues.js";
 import DebugOptions from "../../state/DebugOptions.js";
 import LogicProgram from "../components/LogicProgram.js";
+import LogicStatement from "../components/LogicStatement.js";
 import TraverseDataMap from "../data/TraverseDataMap.js";
 
 export default class LogicStatementHelperFactory {
@@ -27,7 +28,25 @@ export default class LogicStatementHelperFactory {
         this.#traverseDataMap = traverseDataMap;
     }
 
-    createTraverseAndMemoryValueGetter() {
+    createValueCollector(collected) {
+        if (!(collected instanceof Map)) {
+            throw new TypeError("collected must be an instance of Map");
+        }
+
+        return (key) => {
+            const value = collected.get(key) ?? this.#memIn.get(key) ?? 0;
+            collected.set(key, value + 1);
+            if (DebugOptions.has(DebugValues.TRAVERSE_GRAPH)) {
+                console.log("collected:", key);
+            }
+        };
+    }
+
+    createTraverseAndMemoryValueGetter(collected) {
+        if (!(collected instanceof Map)) {
+            throw new TypeError("collected must be an instance of Map");
+        }
+
         const allTargetNodes = this.#program.getAllTargetedNodes();
         const allTargetNodeNames = new Set();
         for (const node of allTargetNodes) {
@@ -36,21 +55,41 @@ export default class LogicStatementHelperFactory {
 
         return (key) => {
             if (allTargetNodeNames.has(key)) {
-                return +this.#traverseDataMap.has(key);
-            } else if (this.#memIn.has(key)) {
-                return this.#memIn.get(key);
+                if (this.#traverseDataMap.has(key)) {
+                    if (DebugOptions.has(DebugValues.TRAVERSE_GRAPH)) {
+                        console.log(`get value for { ${key} } - reached`);
+                    }
+                    return 1;
+                }
+                if (DebugOptions.has(DebugValues.TRAVERSE_GRAPH)) {
+                    console.log(`get value for { ${key} } - not reached`);
+                }
+                return 0;
             }
-            return 0;
+            const result = collected.get(key) ?? this.#memIn.get(key) ?? 0;
+            if (DebugOptions.has(DebugValues.TRAVERSE_GRAPH)) {
+                console.log(`get value for { ${key} } - ${result}`);
+            }
+            return result;
         };
     }
 
     createAtResolver(getValue, params) {
         const atResolver = (nodeName, logicFn) => {
+            if (DebugOptions.has(DebugValues.TRAVERSE_GRAPH)) {
+                console.log(`run at for { ${nodeName} }`);
+                console.log(logicFn.toString());
+            }
+
             if (!this.#traverseDataMap.has(nodeName)) {
+                if (DebugOptions.has(DebugValues.TRAVERSE_GRAPH)) {
+                    console.log("node not reached");
+                    console.groupEnd(`run at for { ${nodeName} }`);
+                }
                 return false;
             }
             const dataMapList = this.#traverseDataMap.get(nodeName);
-            return dataMapList.some((dataMap) => {
+            const res = dataMapList.some((dataMap) => {
                 const getData = LogicStatementHelperFactory.createDataMapValueGetter(dataMap);
                 return logicFn({
                     val: getValue,
@@ -60,44 +99,81 @@ export default class LogicStatementHelperFactory {
                     params
                 });
             });
+
+            if (DebugOptions.has(DebugValues.TRAVERSE_GRAPH)) {
+                console.log(`result: ${res}`);
+                console.groupEnd(`run at for { ${nodeName} }`);
+            }
+            return res;
         };
         return atResolver;
     }
 
     createLogicStatementExecutor(getValue, getData) {
         const exec = (name, params = {}) => {
-            const fn = this.#program.getFunction(name);
+            const fn = this.#program.getInjectedFunction(name) ?? this.#program.getFunction(name);
+
             if (fn != null) {
                 const defParams = fn.params;
 
-                for (const i in defParams) {
-                    if (typeof params[i] == "undefined") {
-                        params[i] = defParams[i];
+                if (Array.isArray(params)) {
+                    const arrParams = params;
+                    params = {};
+                    let i = 0;
+                    for (const key in defParams) {
+                        params[key] = arrParams[i++];
                     }
                 }
 
-                if (DebugOptions.has(DebugValues.TRAVERSE_GRAPH)) {
-                    console.groupCollapsed(`execute function { ${name} }`);
-                    console.log(fn.toString());
-                    console.log("default parameters: ", defParams);
-                    console.log("call parameters: ", params);
+                for (const key in defParams) {
+                    if (typeof params[key] == "undefined") {
+                        params[key] = defParams[key];
+                    }
                 }
 
-                const atResolver = this.createAtResolver(getValue, params);
+                if (fn instanceof LogicStatement) {
+                    if (DebugOptions.has(DebugValues.TRAVERSE_GRAPH)) {
+                        console.groupCollapsed(`execute function { ${name} }`);
+                        console.log(fn.toString());
+                        console.log("default parameters: ", defParams);
+                        console.log("call parameters: ", params);
+                    }
 
-                const res = fn({
-                    val: getValue,
-                    data: getData,
-                    exec,
-                    at: atResolver,
-                    params
-                });
+                    const atResolver = this.createAtResolver(getValue, params);
 
-                if (DebugOptions.has(DebugValues.TRAVERSE_GRAPH)) {
-                    console.log(`result: ${res}`);
-                    console.groupEnd(`execute function { ${name} }`);
+                    const res = fn({
+                        val: getValue,
+                        data: getData,
+                        exec,
+                        at: atResolver,
+                        params
+                    });
+
+                    if (DebugOptions.has(DebugValues.TRAVERSE_GRAPH)) {
+                        console.log(`result: ${res}`);
+                        console.groupEnd(`execute function { ${name} }`);
+                    }
+                    return res;
+                } else {
+                    if (DebugOptions.has(DebugValues.TRAVERSE_GRAPH)) {
+                        console.groupCollapsed(`execute injected function { ${name} }`);
+                        console.log(fn.toString());
+                        console.log("default parameters: ", defParams);
+                        console.log("call parameters: ", params);
+                    }
+
+                    const res = fn({
+                        val: getValue,
+                        data: getData,
+                        params
+                    });
+
+                    if (DebugOptions.has(DebugValues.TRAVERSE_GRAPH)) {
+                        console.log(`result: ${res}`);
+                        console.groupEnd(`execute injected function { ${name} }`);
+                    }
+                    return res;
                 }
-                return res;
             }
             return 0;
         };
@@ -111,7 +187,14 @@ export default class LogicStatementHelperFactory {
 
         return (key) => {
             if (dataMap.has(key)) {
-                return dataMap.get(key);
+                const result = dataMap.get(key);
+                if (DebugOptions.has(DebugValues.TRAVERSE_GRAPH)) {
+                    console.log(`get data value for { ${key} } - ${result}`);
+                }
+                return result;
+            }
+            if (DebugOptions.has(DebugValues.TRAVERSE_GRAPH)) {
+                console.log(`get data value for { ${key} } - 0`);
             }
             return 0;
         };

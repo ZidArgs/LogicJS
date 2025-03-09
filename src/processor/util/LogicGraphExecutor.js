@@ -21,11 +21,13 @@ export default class LogicGraphExecutor {
 
     #forcedReachable;
 
+    #collectibles;
+
     #traverseDataMap = new TraverseDataMap();
 
     #logicStatementHelperFactory;
 
-    constructor(program, memIn, memOut, redirects, forcedReachable) {
+    constructor(program, memIn, memOut, redirects, forcedReachable, collectibles) {
         if (!(program instanceof LogicProgram)) {
             throw new TypeError("program must be an instance of LogicProgram");
         }
@@ -41,11 +43,15 @@ export default class LogicGraphExecutor {
         if (!(forcedReachable instanceof Set)) {
             throw new TypeError("forcedReachable must be an instance of Set");
         }
+        if (!(collectibles instanceof Map)) {
+            throw new TypeError("collectibles must be an instance of Map");
+        }
         this.#program = program;
         this.#memIn = memIn;
         this.#memOut = memOut;
         this.#redirects = redirects;
         this.#forcedReachable = forcedReachable;
+        this.#collectibles = collectibles;
 
         this.#logicStatementHelperFactory = new LogicStatementHelperFactory(this.#program, this.#memIn, this.#traverseDataMap);
     }
@@ -66,8 +72,8 @@ export default class LogicGraphExecutor {
             return;
         }
 
+        console.groupCollapsed(LOG_EXECUTE_LOGIC);
         if (DebugOptions.has(DebugValues.EXECUTE_LOGIC) || DebugOptions.has(DebugValues.TRAVERSE_GRAPH)) {
-            console.groupCollapsed(LOG_EXECUTE_LOGIC);
             console.time("data collection time");
         }
 
@@ -95,16 +101,19 @@ export default class LogicGraphExecutor {
             this.#traverseDataMap.add(name, ...this.#traverseDataMap.dataHandler.getForcedReachableData());
         }
 
-        const getValue = this.#logicStatementHelperFactory.createTraverseAndMemoryValueGetter();
+        const collectedValues = new Map();
+        const getValue = this.#logicStatementHelperFactory.createTraverseAndMemoryValueGetter(collectedValues);
+        const collect = this.#logicStatementHelperFactory.createValueCollector(collectedValues);
 
+        let logicCalculationCounter = 0;
         let reachableCount = 0;
         const queue = [];
 
         if (DebugOptions.has(DebugValues.EXECUTE_LOGIC) || DebugOptions.has(DebugValues.TRAVERSE_GRAPH)) {
             console.timeEnd("data collection time");
             console.log("traverse nodes...");
-            console.time("execution time");
         }
+        console.time("execution time");
 
         for (const edge of startNode.getEdges()) {
             const queueEntry = new LogicTraversionQueueEntry(edge, startData);
@@ -141,6 +150,7 @@ export default class LogicGraphExecutor {
                     exec: execute,
                     at: atResolver
                 });
+                logicCalculationCounter++;
 
                 if (DebugOptions.has(DebugValues.TRAVERSE_GRAPH)) {
                     console.log(`result: ${cRes}`);
@@ -157,6 +167,11 @@ export default class LogicGraphExecutor {
                     }
 
                     if (name != "") {
+                        if (this.#collectibles.has(name)) {
+                            const collectibleName = this.#collectibles.get(name);
+                            collect(collectibleName);
+                        }
+
                         const resultDataMap = queueEntry.mutatedDataMap;
                         const node = this.#program.getNode(name);
                         this.#traverseDataMap.add(name, resultDataMap);
@@ -213,12 +228,13 @@ export default class LogicGraphExecutor {
                 console.groupEnd("traversion graph");
             }
             console.log("success");
-            console.timeEnd("execution time");
             console.log("reachable", this.#traverseDataMap.getAllReachableData());
             console.log("output", this.#memOut.getAll());
             console.log("changes", changes);
-            console.groupEnd(LOG_EXECUTE_LOGIC);
         }
+        console.log("logic calculation count", logicCalculationCounter);
+        console.timeEnd("execution time");
+        console.groupEnd(LOG_EXECUTE_LOGIC);
 
         return changes;
     }

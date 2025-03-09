@@ -1,17 +1,25 @@
 import DebugValues from "../../enum/DebugValues.js";
 import DebugOptions from "../../state/DebugOptions.js";
+import {
+    deepClone
+} from "../../util/DeepClone.js";
 import StatementCompiler from "../../util/StatementCompiler.js";
 import LogicGraph from "./graph/LogicGraph.js";
+
+const LOGIC_VERSION = 1;
 
 const LOG_GROUP_LOAD_LOGIC = "LogicProgram - load";
 const LOG_BUILD_FUNCTIONS = "LogicProgram - build functions";
 const LOG_SET_FUNCTION = "LogicProgram - set function";
 
+// TODO add function injections for JS code
 export default class LogicProgram extends EventTarget {
 
     #graph = new LogicGraph();
 
     #logicFunctions = new Map();
+
+    #injectedFunctions = new Map();
 
     constructor() {
         super();
@@ -32,6 +40,10 @@ export default class LogicProgram extends EventTarget {
     }
 
     load(config) {
+        if (config.version != LOGIC_VERSION) {
+            throw new Error(`Logic version (${config.version}) does not match the expected version (${LOGIC_VERSION})`);
+        }
+
         if (DebugOptions.has(DebugValues.LOGIC_CHANGES)) {
             console.groupCollapsed(LOG_GROUP_LOAD_LOGIC);
         }
@@ -45,7 +57,7 @@ export default class LogicProgram extends EventTarget {
         }
     }
 
-    setEdge(sourceName, targetName, logic, data) {
+    setEdge(sourceName, targetName, logic, data = {}) {
         return this.#graph.setEdge(sourceName, targetName, logic, data);
     }
 
@@ -94,8 +106,24 @@ export default class LogicProgram extends EventTarget {
         return Object.fromEntries(this.#logicFunctions.entries());
     }
 
+    setInjectedFunction(name, fn) {
+        if (typeof fn !== "function") {
+            throw new TypeError("fn must be a function");
+        }
+        this.#injectedFunctions.set(name, fn);
+    }
+
+    removeInjectedFunction(name) {
+        this.#injectedFunctions.delete(name);
+    }
+
+    getInjectedFunction(name) {
+        return this.#injectedFunctions.get(name);
+    }
+
     serialize() {
         const res = {
+            version: LOGIC_VERSION,
             edges: this.#graph.serialize(),
             functions: {}
         };
@@ -104,7 +132,7 @@ export default class LogicProgram extends EventTarget {
             res.functions[name] = fn.serialize();
         }
 
-        return res;
+        return deepClone(res);
     }
 
     #buildFunctions(config) {

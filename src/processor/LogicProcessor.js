@@ -21,7 +21,9 @@ export default class LogicProcessor {
 
     #forcedReachable = new Set();
 
-    #logicGraphExecutor = new LogicGraphExecutor(this.#program, this.#memIn, this.#memOut, this.#redirects, this.#forcedReachable);
+    #collectibles = new Map();
+
+    #logicGraphExecutor = new LogicGraphExecutor(this.#program, this.#memIn, this.#memOut, this.#redirects, this.#forcedReachable, this.#collectibles);
 
     #dirty = false;
 
@@ -165,9 +167,22 @@ export default class LogicProcessor {
         this.#forcedReachable.clear();
     }
 
+    setCollectible(target, value) {
+        this.#collectibles.set(target, value);
+    }
+
+    deleteCollectible(target) {
+        this.#collectibles.delete(target);
+    }
+
+    clearCollectibles() {
+        this.#collectibles.clear();
+    }
+
     execute(startNodeName, startData = {}) {
-        this.#logicGraphExecutor.execute(startNodeName, new DataMap(startData));
+        const result = this.#logicGraphExecutor.execute(startNodeName, new DataMap(startData));
         this.#dirty = false;
+        return result;
     }
 
 }

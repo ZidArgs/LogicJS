@@ -9,7 +9,7 @@ export default class TraverseDataHandler {
     }
 
     static #defaultHasDataFunction(targetDataList, compareData) {
-        return targetDataList.some((targetData) => !targetData.equals(compareData));
+        return targetDataList.some((targetData) => targetData.equals(compareData));
     }
 
     static #defaultUpdateDataFunction(targetDataList, compareData) {
@@ -21,7 +21,6 @@ export default class TraverseDataHandler {
         } else {
             targetDataList.push(compareData);
         }
-        return targetDataList.some((targetData) => !targetData.equals(compareData));
     }
 
     #getForcedReachableDataFunction = TraverseDataHandler.#defaultGetForcedReachableDataFunction;
@@ -81,7 +80,7 @@ export default class TraverseDataHandler {
         if (!(compareData instanceof DataMap)) {
             throw new TypeError("compareData must be an instance of DataMap");
         }
-        return this.#updateDataFunction(targetDataList, compareData);
+        this.#updateDataFunction(targetDataList, compareData);
     }
 
 }
