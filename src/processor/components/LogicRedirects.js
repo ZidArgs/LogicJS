@@ -34,7 +34,10 @@ export default class LogicRedirects {
             console.groupCollapsed(LOG_CHANGE_REDIRECT);
         }
 
-        for (const {source, target, reroute} of redirects) {
+        for (const redirect of redirects) {
+            const {
+                source, target, reroute
+            } = redirect;
             const fromEdge = Edge.createEdgeId(source, target);
             const toNode = `${reroute}`;
 

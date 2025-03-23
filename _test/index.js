@@ -11,9 +11,7 @@ import {
     traverseDataMapHasData as traverseDataMapHasDataOOT,
     traverseDataMapUpdateData as traverseDataMapUpdateDataOOT
 } from "./util/TraverseDataHandlerOOT.js";
-import {
-    isEqual
-} from "./util/Comparator.js";
+import {isEqual} from "./util/Comparator.js";
 
 const logicProcessor = new LogicProcessor();
 
@@ -36,9 +34,7 @@ async function loadLogic(file) {
 
 // ------------ SIMPLE ---------------------
 
-const START_DATA_SIMPLE = {
-    foobar: "barfoo"
-};
+const START_DATA_SIMPLE = {foobar: "barfoo"};
 const START_VALUES_SIMPLE = {
     test_1: 1,
     test_2: 1,
@@ -190,7 +186,10 @@ async function runTestOOT() {
         logicProcessor.setCollectible(locationName, valueName);
     }
 
-    logicProcessor.program.setInjectedFunction("function[has_all_notes_for_song]", ({val, params} = {}) => {
+    logicProcessor.program.setInjectedFunction("function[has_all_notes_for_song]", (opts = {}) => {
+        const {
+            val, params
+        } = opts;
         return val(`calculated[has_all_notes_for_song(${params.song})]`);
     });
     console.timeEnd("INIT LOGIC");
@@ -233,7 +232,10 @@ async function runTestOOTDebug() {
         logicProcessor.setCollectible(locationName, valueName);
     }
 
-    logicProcessor.program.setInjectedFunction("function[has_all_notes_for_song]", ({val, params} = {}) => {
+    logicProcessor.program.setInjectedFunction("function[has_all_notes_for_song]", (opts = {}) => {
+        const {
+            val, params
+        } = opts;
         return val(`calculated[has_all_notes_for_song(${params.song})]`);
     });
     console.timeEnd("INIT LOGIC");

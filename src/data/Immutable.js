@@ -1,6 +1,4 @@
-import {
-    deepClone
-} from "../util/DeepClone.js";
+import {deepClone} from "../util/DeepClone.js";
 
 const HANDLER = {
     get(target, property) {

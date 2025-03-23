@@ -1,6 +1,4 @@
-import {
-    immute
-} from "../../../../data/Immutable.js";
+import {immute} from "../../../../data/Immutable.js";
 import AbstractNode from "./AbstractNode.js";
 import Edge from "./Edge.js";
 

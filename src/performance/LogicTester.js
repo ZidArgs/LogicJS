@@ -102,7 +102,10 @@ export default class LogicTester {
             failed.add(edge.toString());
         }
 
-        return {success, failed};
+        return {
+            success,
+            failed
+        };
     }
 
     /* all functions */
@@ -139,7 +142,10 @@ export default class LogicTester {
             }
         }
 
-        return {success, failed};
+        return {
+            success,
+            failed
+        };
     }
 
 }

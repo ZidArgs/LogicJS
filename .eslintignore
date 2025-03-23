@@ -2,5 +2,6 @@
 node_modules
 .idea
 .vscode
+_old
 
 # Add any directories, files, or patterns you don't want to be linted

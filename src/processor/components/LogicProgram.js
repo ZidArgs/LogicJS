@@ -1,8 +1,6 @@
 import DebugValues from "../../enum/DebugValues.js";
 import DebugOptions from "../../state/DebugOptions.js";
-import {
-    deepClone
-} from "../../util/DeepClone.js";
+import {deepClone} from "../../util/DeepClone.js";
 import StatementCompiler from "../../util/StatementCompiler.js";
 import LogicGraph from "./graph/LogicGraph.js";
 
@@ -40,7 +38,7 @@ export default class LogicProgram extends EventTarget {
     }
 
     load(config) {
-        if (config.version != LOGIC_VERSION) {
+        if (config._version != LOGIC_VERSION) {
             throw new Error(`Logic version (${config.version}) does not match the expected version (${LOGIC_VERSION})`);
         }
 
@@ -123,7 +121,7 @@ export default class LogicProgram extends EventTarget {
 
     serialize() {
         const res = {
-            version: LOGIC_VERSION,
+            _version: LOGIC_VERSION,
             edges: this.#graph.serialize(),
             functions: {}
         };

@@ -1,8 +1,6 @@
 import UsageCounter from "../data/UsageCounter.js";
 import Node from "../processor/components/graph/components/Node.js";
-import {
-    debounceCacheData
-} from "./Debouncer.js";
+import {debounceCacheData} from "./Debouncer.js";
 
 export default class NodeFactory extends EventTarget {
 

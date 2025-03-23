@@ -1,6 +1,4 @@
-import {
-    immute
-} from "../../data/Immutable.js";
+import {immute} from "../../data/Immutable.js";
 
 const PARAM_TYPES = ["undefined", "boolean", "number", "string"];
 
@@ -12,7 +10,10 @@ export default class LogicStatement extends Function {
 
     #source;
 
-    constructor(statement, {dependencies = [], params = {}, source = {}}) {
+    constructor(statement, opts = {}) {
+        const {
+            dependencies = [], params = {}, source = {}
+        } = opts;
         super(LogicStatement.parameterString, `return ${statement}`);
 
         this.#source = immute(source);

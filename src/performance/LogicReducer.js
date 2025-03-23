@@ -179,46 +179,55 @@ class LogicReducer {
 
     reduceLogic(config) {
         return {
-            edges: this.#reduceEdges(config.edges),
-            mixins: this.#reduceMixins(config.mixins)
+            _version: config._version,
+            graph: this.#reduceGraph(config.graph),
+            functions: this.#reduceFunctions(config.functions)
         };
     }
 
-    #reduceEdges(edges) {
+    #reduceGraph(config) {
         const res = {};
-        for (const s in edges) {
-            res[s] = res[s] ?? {};
-            const targets = edges[s];
-            for (const t in targets) {
-                const edge = targets[t];
-                const logic = edge.logic;
-                const data = edge.data;
+        for (const sourceName in config) {
+            const edgeConfig = config[sourceName];
+            const {
+                dataMutation, edges = edgeConfig
+            } = edgeConfig;
+            res[sourceName] = res[sourceName] ?? {
+                dataMutation: dataMutation ?? {},
+                edges: {}
+            };
+            for (const targetName in edges) {
+                const targetEdge = edges[targetName];
+                const {
+                    dataMutation, logic = targetEdge
+                } = targetEdge;
                 try {
-                    res[s][t] = {
-                        logic: logicReducer(logic) ?? {type: "false"},
-                        data: logicReducer(data) ?? undefined
+                    res[sourceName].edges[targetName] = {
+                        dataMutation: dataMutation ?? {},
+                        logic: logicReducer(logic) ?? {type: "false"}
                     };
                 } catch (err) {
-                    console.error(`Error in edge "${s}" -> "${t}"`, err);
+                    console.error(`Error in edge "${sourceName}" -> "${targetName}"`, err);
                 }
             }
         }
         return res;
     }
 
-    #reduceMixins(mixins) {
+    #reduceFunctions(functions) {
         const res = {};
-        for (const n in mixins) {
-            const mixin = mixins[name];
-            const logic = mixin.logic;
-            const params = mixin.params;
+        for (const name in functions) {
+            const func = functions[name];
+            const {
+                params, logic = func
+            } = func;
             try {
-                res.mixins[n] = {
-                    logic: logicReducer(logic) ?? {type: "false"},
-                    params
+                res.functions[name] = {
+                    params: params ?? [],
+                    logic: logicReducer(logic) ?? {type: "false"}
                 };
             } catch (err) {
-                console.error(`Error in mixin "${n}"`, err);
+                console.error(`Error in function "${name}"`, err);
             }
         }
         return res;

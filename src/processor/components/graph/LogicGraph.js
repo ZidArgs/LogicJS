@@ -38,11 +38,15 @@ export default class LogicGraph extends EventTarget {
 
         for (const sourceName in config) {
             const edgeConfig = config[sourceName];
-            const {edges = edgeConfig, dataMutation} = edgeConfig;
+            const {
+                dataMutation, edges = edgeConfig
+            } = edgeConfig;
             const sourceNode = this.#nodeFactory.getOrCreateNode(sourceName, dataMutation);
             for (const targetName in edges) {
                 const targetEdge = edges[targetName];
-                const {logic = targetEdge, dataMutation} = targetEdge;
+                const {
+                    dataMutation, logic = targetEdge
+                } = targetEdge;
 
                 const targetNode = this.#nodeFactory.getOrCreateNode(targetName);
                 this.#createEdge(sourceNode, targetNode, logic, dataMutation);
