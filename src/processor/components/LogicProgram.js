@@ -48,7 +48,7 @@ export default class LogicProgram extends EventTarget {
             console.groupCollapsed(LOG_GROUP_LOAD_LOGIC);
         }
 
-        this.#graph.load(config.edges);
+        this.#graph.load(config.graph);
 
         this.#buildFunctions(config.functions);
 

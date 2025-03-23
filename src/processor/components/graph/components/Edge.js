@@ -27,13 +27,15 @@ export default class Edge {
         if (!(logic instanceof LogicStatement)) {
             throw new TypeError("logic must be a ProcessorStatement");
         }
-        if (dataMutation == null || typeof dataMutation !== "object" || Array.isArray(dataMutation)) {
+        if (typeof dataMutation !== "object" || Array.isArray(dataMutation)) {
             throw new TypeError("dataMutation must be a dict");
         }
         this.#source = source;
         this.#target = target;
         this.#logic = logic;
-        this.#dataMutation = immute(dataMutation);
+        if (dataMutation != null) {
+            this.#dataMutation = immute(dataMutation);
+        }
     }
 
     get source() {
@@ -48,14 +50,21 @@ export default class Edge {
         return this.#logic;
     }
 
+    set dataMutation(value = {}) {
+        if (value == null || typeof value !== "object" || Array.isArray(value)) {
+            throw new TypeError("dataMutation must be a dict");
+        }
+        this.#dataMutation = immute(value);
+    }
+
     get dataMutation() {
         return this.#dataMutation;
     }
 
     serialize() {
         return {
-            logic: this.#logic.serialize(),
-            dataMutation: this.#dataMutation
+            dataMutation: this.#dataMutation,
+            logic: this.#logic.serialize().logic
         };
     }
 

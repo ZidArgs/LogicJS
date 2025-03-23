@@ -1,15 +1,23 @@
 import fs from "fs";
 import path from "path";
 
-import TreeLogic from "/LogicJS/generator/TreeLogic.js";
+import LogicGraph from "../src/processor/components/graph/LogicGraph.js";
 
 const __dirname = path.resolve();
 
-const inLogicFile = path.join(__dirname, "/_demo/logic.json");
-const outLogicFile = path.join(__dirname, "/_demo/logic.out.json");
+const inLogicFile = path.join(__dirname, "/_test/oot.logic.json");
+const outLogicFile = path.join(__dirname, "/_test/oot.logic.json");
 
-const treeLogic = new TreeLogic();
+const logicGraph = new LogicGraph();
 
-treeLogic.loadLogic(JSON.parse(fs.readFileSync(inLogicFile).toString()), false);
+const logic = JSON.parse(fs.readFileSync(inLogicFile).toString());
 
-fs.writeFileSync(outLogicFile, JSON.stringify(treeLogic.serialize(), null, 4));
+logicGraph.load(logic.graph);
+
+const convertedLogic = {
+    version: logic.version,
+    graph: logicGraph.serialize(),
+    functions: logic.functions
+};
+
+fs.writeFileSync(outLogicFile, JSON.stringify(convertedLogic, null, 4) + "\n");

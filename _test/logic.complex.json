@@ -1,193 +1,236 @@
 {
     "version": 1,
-    "edges": {
+    "graph": {
         "root": {
-            "root_exits": {
-                "logic": {
-                    "type": "or",
-                    "content": [
-                        {
-                            "type": "function",
-                            "ref": "isStartState",
-                            "params": {}
-                        },
-                        {
-                            "type": "value",
-                            "ref": "state_switch"
-                        }
-                    ]
+            "dataMutation": {},
+            "edges": {
+                "root_exits": {
+                    "dataMutation": {},
+                    "logic": {
+                        "type": "or",
+                        "content": [
+                            {
+                                "type": "function",
+                                "ref": "isStartState",
+                                "params": {}
+                            },
+                            {
+                                "type": "value",
+                                "ref": "state_switch"
+                            }
+                        ]
+                    }
                 }
             }
         },
         "root_exits": {
-            "a_start": {
-                "logic": {
-                    "type": "function",
-                    "ref": "state_a",
-                    "params": {}
-                }
-            },
-            "b_start": {
-                "logic": {
-                    "type": "function",
-                    "ref": "state_b",
-                    "params": {}
-                }
-            }
-        },
-        "state_switch": {
-            "state_switch_a": {
-                "logic": {
-                    "type": "function",
-                    "ref": "state_a",
-                    "params": {}
+            "dataMutation": {},
+            "edges": {
+                "a_start": {
+                    "dataMutation": {},
+                    "logic": {
+                        "type": "function",
+                        "ref": "state_a",
+                        "params": {}
+                    }
                 },
-                "dataMutation": {
-                    "state": "b"
-                }
-            },
-            "state_switch_b": {
-                "logic": {
-                    "type": "function",
-                    "ref": "state_b",
-                    "params": {}
-                },
-                "dataMutation": {
-                    "state": "a"
-                }
-            }
-        },
-        "state_switch_a": {
-            "root_exits": {
-                "logic": {
-                    "type": "true"
-                }
-            }
-        },
-        "state_switch_b": {
-            "root_exits": {
-                "logic": {
-                    "type": "true"
+                "b_start": {
+                    "dataMutation": {},
+                    "logic": {
+                        "type": "function",
+                        "ref": "state_b",
+                        "params": {}
+                    }
                 }
             }
         },
         "a_start": {
-            "A": {
-                "logic": {
-                    "type": "true"
+            "dataMutation": {},
+            "edges": {
+                "A": {
+                    "dataMutation": {},
+                    "logic": {
+                        "type": "true"
+                    }
                 }
             }
         },
         "b_start": {
-            "B": {
-                "logic": {
-                    "type": "true"
+            "dataMutation": {},
+            "edges": {
+                "B": {
+                    "dataMutation": {},
+                    "logic": {
+                        "type": "true"
+                    }
+                }
+            }
+        },
+        "state_switch": {
+            "dataMutation": {},
+            "edges": {
+                "state_switch_a": {
+                    "dataMutation": {},
+                    "logic": {
+                        "type": "function",
+                        "ref": "state_a",
+                        "params": {}
+                    }
+                },
+                "state_switch_b": {
+                    "dataMutation": {},
+                    "logic": {
+                        "type": "function",
+                        "ref": "state_b",
+                        "params": {}
+                    }
+                }
+            }
+        },
+        "state_switch_a": {
+            "dataMutation": {
+                "state": "b"
+            },
+            "edges": {
+                "root_exits": {
+                    "dataMutation": {},
+                    "logic": {
+                        "type": "true"
+                    }
+                }
+            }
+        },
+        "state_switch_b": {
+            "dataMutation": {
+                "state": "a"
+            },
+            "edges": {
+                "root_exits": {
+                    "dataMutation": {},
+                    "logic": {
+                        "type": "true"
+                    }
                 }
             }
         },
         "A": {
-            "C": {
-                "logic": {
-                    "type": "true"
-                },
-                "dataMutation": {
-                    "a": true,
-                    "b": true,
-                    "c": true
-                }
-            },
-            "A.A": {
-                "logic": {
-                    "type": "function",
-                    "ref": "canUse",
-                    "params": {
-                        "item": {
-                            "type": "string",
-                            "value": "item[foobar]"
-                        }
+            "dataMutation": {},
+            "edges": {
+                "C": {
+                    "dataMutation": {
+                        "a": true,
+                        "b": true,
+                        "c": true
+                    },
+                    "logic": {
+                        "type": "true"
                     }
-                }
-            },
-            "A.B": {
-                "logic": {
-                    "type": "and",
-                    "content": [
-                        {
-                            "type": "data",
-                            "ref": "b"
-                        },
-                        {
-                            "type": "function",
-                            "ref": "canUse",
-                            "params": {
-                                "item": {
-                                    "type": "string",
-                                    "value": "item[foobar]"
-                                }
+                },
+                "A.A": {
+                    "dataMutation": {},
+                    "logic": {
+                        "type": "function",
+                        "ref": "canUse",
+                        "params": {
+                            "item": {
+                                "type": "string",
+                                "value": "item[foobar]"
                             }
                         }
-                    ]
-                }
-            },
-            "A.C": {
-                "logic": {
-                    "type": "and",
-                    "content": [
-                        {
-                            "type": "or",
-                            "content": [
-                                {
-                                    "type": "function",
-                                    "ref": "canUse",
-                                    "params": {
-                                        "item": {
-                                            "type": "string",
-                                            "value": "item[farboo]"
-                                        }
-                                    }
-                                },
-                                {
-                                    "type": "function",
-                                    "ref": "canUse",
-                                    "params": {
-                                        "item": {
-                                            "type": "string",
-                                            "value": "item[barfoo]"
-                                        }
+                    }
+                },
+                "A.B": {
+                    "dataMutation": {},
+                    "logic": {
+                        "type": "and",
+                        "content": [
+                            {
+                                "type": "data",
+                                "ref": "b"
+                            },
+                            {
+                                "type": "function",
+                                "ref": "canUse",
+                                "params": {
+                                    "item": {
+                                        "type": "string",
+                                        "value": "item[foobar]"
                                     }
                                 }
-                            ]
-                        }
-                    ]
+                            }
+                        ]
+                    }
+                },
+                "A.C": {
+                    "dataMutation": {},
+                    "logic": {
+                        "type": "and",
+                        "content": [
+                            {
+                                "type": "or",
+                                "content": [
+                                    {
+                                        "type": "function",
+                                        "ref": "canUse",
+                                        "params": {
+                                            "item": {
+                                                "type": "string",
+                                                "value": "item[farboo]"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "type": "function",
+                                        "ref": "canUse",
+                                        "params": {
+                                            "item": {
+                                                "type": "string",
+                                                "value": "item[barfoo]"
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    }
                 }
             }
         },
         "B": {
-            "state_switch": {
-                "logic": {
-                    "type": "true"
-                }
-            },
-            "C": {
-                "logic": {
-                    "type": "true"
+            "dataMutation": {},
+            "edges": {
+                "state_switch": {
+                    "dataMutation": {},
+                    "logic": {
+                        "type": "true"
+                    }
                 },
-                "dataMutation": {
-                    "a": true,
-                    "b": true,
-                    "c": true
+                "C": {
+                    "dataMutation": {
+                        "a": true,
+                        "b": true,
+                        "c": true
+                    },
+                    "logic": {
+                        "type": "true"
+                    }
                 }
             }
         },
         "C": {
-            "B": {
-                "logic": {
-                    "type": "true"
-                }
-            },
-            "A": {
-                "logic": {
-                    "type": "true"
+            "dataMutation": {},
+            "edges": {
+                "B": {
+                    "dataMutation": {},
+                    "logic": {
+                        "type": "true"
+                    }
+                },
+                "A": {
+                    "dataMutation": {},
+                    "logic": {
+                        "type": "true"
+                    }
                 }
             }
         }

@@ -25,7 +25,7 @@
   "scripts": {
     "lint": "yarn eslint .",
     "lintfix": "yarn eslint --fix .",
-    "test": "node server.js",
-    "convert": "node _demo/converter.js"
+    "serve": "node server.js",
+    "convert": "node _test/converter.js"
   }
 }

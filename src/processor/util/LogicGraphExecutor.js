@@ -77,11 +77,17 @@ export default class LogicGraphExecutor {
             console.time("data collection time");
         }
 
+        const startQueueEntryDataMap = new DataMap(startData);
+        for (const [key, value] of Object.entries(startNode.dataMutation)) {
+            startQueueEntryDataMap.set(key, value);
+        }
+
         if (DebugOptions.has(DebugValues.EXECUTE_LOGIC)) {
             console.log("start node", startNodeName);
             console.log("input", this.#memIn.getAll());
             console.log("redirects", this.#redirects.getAll());
             console.log("forced", Array.from(this.#forcedReachable));
+            console.log("startData", startQueueEntryDataMap.getAll());
         }
 
         const allTargetNodes = this.#program.getAllTargetedNodes();
@@ -116,10 +122,10 @@ export default class LogicGraphExecutor {
         console.time("execution time");
 
         for (const edge of startNode.getEdges()) {
-            const queueEntry = new LogicTraversionQueueEntry(edge, startData);
+            const queueEntry = new LogicTraversionQueueEntry(edge, startQueueEntryDataMap);
             queue.push(queueEntry);
             if (DebugOptions.has(DebugValues.TRAVERSE_GRAPH)) {
-                console.log(`queue edge { ${edge} } with data`, startData.getAll());
+                console.log(`queue edge { ${edge} } with data`, startQueueEntryDataMap.getAll(), edge.dataMutation);
             }
         }
 
@@ -172,25 +178,28 @@ export default class LogicGraphExecutor {
                             collect(collectibleName);
                         }
 
-                        const resultDataMap = queueEntry.mutatedDataMap;
+                        const queueEntryDataMap = queueEntry.mutatedDataMap;
                         const node = this.#program.getNode(name);
-                        this.#traverseDataMap.add(name, resultDataMap);
-                        const childEdges = node.getEdges();
-                        for (const childEdge of childEdges) {
-                            const childSourceNode = childEdge.source;
-                            const childTargetNode = childEdge.target;
-                            const chName = this.#redirects.get(childSourceNode.name, childTargetNode.name);
-                            const newQueueEntry = new LogicTraversionQueueEntry(childEdge, resultDataMap);
-                            const newEntryDataMap = newQueueEntry.mutatedDataMap;
-                            if (!this.#traverseDataMap.has(chName, newEntryDataMap)) {
+                        const resultDataMap = new DataMap(queueEntryDataMap);
+
+                        for (const [key, value] of Object.entries(node.dataMutation)) {
+                            resultDataMap.set(key, value);
+                        }
+
+                        if (!this.#traverseDataMap.has(name, resultDataMap)) {
+                            this.#traverseDataMap.add(name, resultDataMap);
+                            const childEdges = node.getEdges();
+
+                            for (const childEdge of childEdges) {
+                                const newQueueEntry = new LogicTraversionQueueEntry(childEdge, resultDataMap);
                                 queue.push(newQueueEntry);
 
                                 if (DebugOptions.has(DebugValues.TRAVERSE_GRAPH)) {
-                                    console.log(`queue edge { ${childEdge} } with data`, resultDataMap.getAll(), childEdge.dataMutation);
+                                    console.log(`queue edge { ${childEdge} } with data`, queueEntryDataMap.getAll(), childEdge.dataMutation);
                                 }
-                            } else if (DebugOptions.has(DebugValues.TRAVERSE_GRAPH)) {
-                                console.log(`ignore edge { ${childEdge} } with data`, resultDataMap.getAll(), childEdge.dataMutation);
                             }
+                        } else if (DebugOptions.has(DebugValues.TRAVERSE_GRAPH)) {
+                            console.log(`ignore edge { ${name} } with data`, resultDataMap);
                         }
                     }
                 } else {

@@ -1,50 +1,60 @@
 {
     "version": 1,
-    "edges": {
+    "graph": {
         "root": {
-            "A": {
-                "logic": {
-                    "type": "and",
-                    "content": [
-                        {
-                            "type": "value",
-                            "ref": "test_1"
-                        },
-                        {
-                            "type": "value",
-                            "ref": "test_2"
-                        },
-                        {
-                            "type": "function",
-                            "ref": "function.barfoo",
-                            "params": {}
-                        }
-                    ]
+            "dataMutation": {},
+            "edges": {
+                "A": {
+                    "dataMutation": {},
+                    "logic": {
+                        "type": "and",
+                        "content": [
+                            {
+                                "type": "value",
+                                "ref": "test_1"
+                            },
+                            {
+                                "type": "value",
+                                "ref": "test_2"
+                            },
+                            {
+                                "type": "function",
+                                "ref": "function.barfoo",
+                                "params": {}
+                            }
+                        ]
+                    }
                 }
             }
         },
         "A": {
-            "B": {
-                "logic": {
-                    "type": "at",
-                    "node": "C",
-                    "content": {
-                        "type": "true"
+            "dataMutation": {},
+            "edges": {
+                "B": {
+                    "dataMutation": {},
+                    "logic": {
+                        "type": "at",
+                        "node": "C",
+                        "content": {
+                            "type": "true"
+                        }
                     }
-                }
-            },
-            "C": {
-                "logic": {
-                    "type": "value",
-                    "ref": "test_3"
-                }
-            },
-            "D": {
-                "logic": {
-                    "type": "function",
-                    "ref": "function.foobar",
-                    "params": {
-                        "test": true
+                },
+                "C": {
+                    "dataMutation": {},
+                    "logic": {
+                        "type": "value",
+                        "ref": "test_3"
+                    }
+                },
+                "D": {
+                    "dataMutation": {},
+                    "logic": {
+                        "type": "function",
+                        "ref": "function.foobar",
+                        "params": {
+                            "test": true
+                        }
                     }
                 }
             }

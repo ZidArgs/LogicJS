@@ -26,11 +26,15 @@ export default class NodeFactory extends EventTarget {
         return null;
     }
 
-    getOrCreateNode(name) {
+    getOrCreateNode(name, dataMutation) {
         if (this.#nodes.has(name)) {
-            return this.#nodes.get(name);
+            const node = this.#nodes.get(name);
+            if (dataMutation != null) {
+                node.dataMutation = dataMutation;
+            }
+            return node;
         }
-        const node = new Node(name);
+        const node = new Node(name, dataMutation);
         this.#leafNodes.add(node);
         node.addEventListener("edge_added", (event) => {
             this.#targetedNodes.increase(event.targetNode);

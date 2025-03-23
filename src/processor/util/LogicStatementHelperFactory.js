@@ -154,7 +154,7 @@ export default class LogicStatementHelperFactory {
                         console.groupEnd(`execute function { ${name} }`);
                     }
                     return res;
-                } else {
+                } else if (typeof fn === "function") {
                     if (DebugOptions.has(DebugValues.TRAVERSE_GRAPH)) {
                         console.groupCollapsed(`execute injected function { ${name} }`);
                         console.log(fn.toString());
