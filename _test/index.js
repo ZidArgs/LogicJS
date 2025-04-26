@@ -210,6 +210,7 @@ async function runTestOOT() {
 
     await printResult(result);
     const output = await logicProcessor.getAllOutput();
+    // FIXME dont test regions, only events and locations
     console.log("as expected", isEqual(output, EXPECTED_VALUES_OOT));
 
     console.groupEnd("RUN LOGIC TEST - OOT");
@@ -248,6 +249,7 @@ async function runTestOOTDebug() {
 
     const result = logicProcessor.execute("region[root]", START_DATA_OOT);
     await printResult(result);
+    // FIXME dont test regions, only events and locations
     console.log("as expected", isEqual(result, EXPECTED_VALUES_OOT));
 
     DebugOptions
