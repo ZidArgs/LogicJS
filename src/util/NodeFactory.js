@@ -76,7 +76,7 @@ export default class NodeFactory extends EventTarget {
 
     #notifyAddedNodes = debounceCacheData((newNodes) => {
         const event = new Event("added");
-        event.added = newNodes;
+        event.added = newNodes.map(([node]) => node);
         this.dispatchEvent(event);
     });
 

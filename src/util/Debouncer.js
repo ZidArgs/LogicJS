@@ -34,7 +34,7 @@ export function debounceCacheData(func, wait = 0) {
     let timeout;
     let cache = [];
     const fn = function(...data) {
-        cache.push(...data);
+        cache.push(data);
         clearTimeout(timeout);
         timeout = setTimeout(() => {
             func(cache);
