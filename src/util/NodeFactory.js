@@ -25,28 +25,28 @@ export default class NodeFactory extends EventTarget {
     }
 
     getOrCreateNode(name, dataMutation) {
-        if (this.#nodes.has(name)) {
-            const node = this.#nodes.get(name);
+        const node = this.#nodes.get(name);
+        if (node != null) {
             if (dataMutation != null) {
                 node.dataMutation = dataMutation;
             }
             return node;
         }
-        const node = new Node(name, dataMutation);
-        this.#leafNodes.add(node);
-        node.addEventListener("edge_added", (event) => {
+        const newNode = new Node(name, dataMutation);
+        this.#leafNodes.add(newNode);
+        newNode.addEventListener("edge_added", (event) => {
             this.#targetedNodes.increase(event.targetNode);
             this.#leafNodes.delete(event.sourceNode);
         });
-        node.addEventListener("edge_removed", (event) => {
+        newNode.addEventListener("edge_removed", (event) => {
             this.#targetedNodes.decrease(event.targetNode);
             if (event.sourceNode.isLeaf()) {
                 this.#leafNodes.add(event.sourceNode);
             }
         });
-        this.#nodes.set(name, node);
+        this.#nodes.set(name, newNode);
         this.#notifyAddedNodes(name);
-        return node;
+        return newNode;
     }
 
     getAllNodes() {
