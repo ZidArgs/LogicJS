@@ -8,14 +8,4 @@ const service = new WebService(port, {enableCors});
 service.registerServiceModule(StaticService, "", {serveFolder: "./_test"});
 service.registerServiceModule(StaticService, "LogicJS", {serveFolder: "./src"});
 
-const po = service.port.toString().padEnd(5);
-
-console.log(``);
-console.log(`╔════════════════════════════════════════╗`);
-console.log(`║ ┌╦┐ ╭────────────────────────────╮ ┌╦┐ ║`);
-console.log(`║  │  │                            │  │  ║`);
-console.log(`╠─═╬═─╡   http://localhost:${po}   ╞─═╬═─╣`);
-console.log(`║  │  │                            │  │  ║`);
-console.log(`║ └╩┘ ╰────────────────────────────╯ └╩┘ ║`);
-console.log(`╚════════════════════════════════════════╝`);
-console.log(``);
+service.printServerInfoPanel();
