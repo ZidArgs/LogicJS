@@ -1,17 +1,20 @@
 {
   "name": "logicjs",
-  "version": "0.1.8",
+  "version": "0.2.0",
   "description": "Tree Logic Processor for JS Applications",
-  "type": "module",
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@bitbucket.org/zidargs/logicjs.git"
-  },
   "author": "Denis Weiß (ZidArgs)",
   "license": "MIT",
-  "homepage": "https://bitbucket.org/zidargs/logicjs/src",
+  "homepage": "https://github.com/ZidArgs/LogicJS",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:ZidArgs/LogicJS.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ZidArgs/LogicJS/issues"
+  },
+  "type": "module",
   "dependencies": {
-    "jswebservice": "https://github.com/ZidArgs/JSWebService.git/#3.1.6"
+    "jswebservice": "https://github.com/ZidArgs/JSWebservice.git/#3.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.28.4",
